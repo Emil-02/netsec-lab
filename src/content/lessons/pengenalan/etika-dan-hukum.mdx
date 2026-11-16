@@ -1,0 +1,65 @@
+Sebelum menyentuh satu pun teknik serangan, ada satu hal yang **paling penting** untuk dipahami: **ilmu keamanan siber adalah pedang bermata dua.** Teknik yang sama bisa dipakai untuk melindungi atau merusak. Yang membedakan adalah **izin** dan **niat**.
+
+## Jenis-jenis hacker
+
+| Jenis | Ciri | Legal? |
+|---|---|---|
+| 🎩 **White hat** (hacker etis) | Menguji keamanan **dengan izin tertulis**, lalu melaporkan celah agar diperbaiki | ✅ Ya |
+| 🎩 **Black hat** | Membobol sistem **tanpa izin** untuk keuntungan pribadi atau merusak | ❌ Tidak |
+| 🎩 **Grey hat** | Membobol tanpa izin, tapi "berniat baik" (misal melapor setelahnya) | ⚠️ Tetap melanggar hukum |
+
+<Callout type="danger" title="Aturan emas">
+**Jangan pernah** melakukan scanning, serangan, atau percobaan login ke sistem yang **bukan milikmu** atau yang **tidak memberimu izin tertulis**. Niat baik tidak menghapus pelanggaran hukum.
+</Callout>
+
+## Dasar hukum di Indonesia
+
+Di Indonesia, aktivitas siber diatur terutama oleh **UU No. 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik (UU ITE)** beserta perubahannya. Beberapa perbuatan yang dilarang antara lain:
+
+- **Mengakses sistem elektronik milik orang lain tanpa hak** (Pasal 30)
+- **Menyadap (intersepsi) transmisi data** tanpa hak (Pasal 31)
+- **Mengubah, merusak, atau memindahkan data** milik orang lain tanpa hak (Pasal 32)
+- **Mengganggu sistem elektronik** sehingga tidak bekerja sebagaimana mestinya (Pasal 33)
+
+Ancaman hukumannya bisa berupa pidana penjara bertahun-tahun dan denda ratusan juta rupiah. Selain itu ada juga **UU Pelindungan Data Pribadi (UU PDP)** yang mengatur pengelolaan data pribadi.
+
+<Callout type="info">
+Materi ini bersifat edukatif dan ringkas, bukan nasihat hukum. Untuk detail pasal dan ancaman pidana, rujuk teks resmi undang-undangnya.
+</Callout>
+
+## Cara belajar hacking secara legal
+
+- ✅ **Lab simulasi** seperti NetSec Lab — semuanya terjadi di dalam browsermu
+- ✅ **Mesin virtual milikmu sendiri** (VirtualBox, VM) di jaringan rumah yang terisolasi
+- ✅ **Platform latihan legal**: CTF, TryHackMe, Hack The Box, dan sejenisnya
+- ✅ **Bug bounty program** — perusahaan yang secara resmi mengundang peneliti menguji sistem mereka, **dengan mengikuti aturan (scope) program**
+
+## Kode etik NetSec Lab
+
+1. Saya hanya menguji sistem yang saya miliki atau yang memberi saya izin tertulis.
+2. Saya melaporkan celah keamanan secara bertanggung jawab (*responsible disclosure*).
+3. Saya tidak mencuri, merusak, atau menyebarkan data orang lain.
+4. Saya menggunakan ilmu ini untuk **melindungi**, bukan merusak.
+
+<Quiz
+  id="pengenalan-etika"
+  questions={[
+    {
+      q: "Kamu menemukan celah di website sekolah saat iseng mencoba. Apa yang sebaiknya dilakukan?",
+      options: ["Mengeksploitasinya untuk membuktikan", "Menyebarkannya di media sosial", "Berhenti, lalu melaporkannya secara baik-baik ke pihak sekolah tanpa mengeksploitasi lebih jauh", "Menjual informasinya"],
+      answer: 2,
+      explanation: "Hentikan aktivitasmu dan laporkan secara bertanggung jawab. Mengeksploitasi atau menyebarkan bisa melanggar hukum.",
+    },
+    {
+      q: "Apa yang membedakan white hat dari black hat?",
+      options: ["Alat yang digunakan", "Izin dan niat", "Kecepatan mengetik", "Sistem operasi yang dipakai"],
+      answer: 1,
+      explanation: "Tekniknya bisa sama persis. White hat bekerja dengan izin untuk memperbaiki keamanan.",
+    },
+    {
+      q: "Mana tempat yang legal untuk berlatih teknik serangan?",
+      options: ["Wi-Fi tetangga", "Server kampus tanpa izin", "Lab simulasi dan platform CTF", "Website toko online acak"],
+      answer: 2,
+    },
+  ]}
+/>

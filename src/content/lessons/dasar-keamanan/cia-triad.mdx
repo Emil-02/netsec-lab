@@ -1,0 +1,75 @@
+Selamat datang di bagian **keamanan**! Sebelum belajar serangan dan pertahanan, kita perlu bahasa yang sama untuk menjawab pertanyaan: *"Apa sebenarnya yang kita lindungi?"*
+
+## CIA Triad
+
+Hampir semua tujuan keamanan informasi bisa diringkas menjadi tiga hal, disebut **CIA Triad**:
+
+| Pilar | Arti | Contoh pelanggaran | Contoh perlindungan |
+|---|---|---|---|
+| 🔒 **Confidentiality** (kerahasiaan) | hanya pihak berhak yang bisa membaca data | password disadap di Wi-Fi publik | enkripsi (HTTPS), kontrol akses |
+| ✅ **Integrity** (integritas) | data tidak diubah tanpa izin | installer disisipi malware, nilai rapor diubah | hash, tanda tangan digital |
+| ⚡ **Availability** (ketersediaan) | layanan bisa diakses saat dibutuhkan | serangan DDoS, ransomware | backup, redundansi, firewall |
+
+Setiap kali kamu mendengar sebuah serangan, coba tanyakan: *pilar mana yang dilanggar?*
+
+## Istilah penting
+
+- **Aset** — sesuatu yang berharga: data pelanggan, server, reputasi
+- **Kerentanan (vulnerability)** — kelemahan: software belum di-update, password lemah, port terbuka tanpa alasan
+- **Ancaman (threat)** — pihak/kejadian yang bisa memanfaatkan kerentanan: peretas, malware, karyawan ceroboh, banjir
+- **Risiko** — kemungkinan ancaman memanfaatkan kerentanan × dampaknya
+- **Exploit** — cara/kode untuk memanfaatkan kerentanan
+- **Kontrol** — langkah untuk mengurangi risiko
+
+```text
+Risiko = Ancaman × Kerentanan × Dampak
+```
+
+Kita tidak bisa menghapus semua ancaman, tapi kita **bisa** mengurangi kerentanan dan dampaknya.
+
+## Jenis ancaman yang umum
+
+- 🎣 **Phishing** — menipu korban agar memberikan password atau membuka lampiran berbahaya
+- 🦠 **Malware** — virus, trojan, ransomware, spyware
+- 🔑 **Serangan password** — menebak atau mencuri kredensial
+- 👂 **Penyadapan (sniffing) & man-in-the-middle** — mencuri data yang lewat di jaringan
+- 💥 **DoS/DDoS** — membanjiri layanan sampai tidak bisa diakses
+- 🧑‍💼 **Ancaman dari dalam (insider)** — karyawan yang ceroboh atau berniat buruk
+
+## Prinsip pertahanan
+
+1. **Least privilege** — beri hak akses seminimal mungkin (ingat: jangan bekerja sebagai root!)
+2. **Defense in depth** — pertahanan berlapis: firewall + update + password kuat + monitoring + backup
+3. **Default deny** — tolak semua, izinkan hanya yang benar-benar diperlukan
+4. **Kurangi attack surface** — matikan layanan & port yang tidak dipakai
+5. **Asumsikan akan dibobol** — siapkan logging, monitoring, dan rencana respons insiden
+
+<Callout type="info" title="Mindset penyerang & pembela">
+Di modul-modul berikutnya kamu akan melihat cara penyerang berpikir (*reconnaissance*, sniffing, serangan password). Tujuannya bukan untuk menyerang orang lain, melainkan agar kamu tahu **apa yang harus dipertahankan** — semua praktik dilakukan di lab simulasi yang aman dan legal.
+</Callout>
+
+<Quiz
+  id="sec-cia"
+  questions={[
+    {
+      q: "Seorang penyerang mengubah nominal transfer di database bank. Pilar CIA mana yang dilanggar?",
+      options: ["Confidentiality", "Integrity", "Availability", "Tidak ada"],
+      answer: 1,
+    },
+    {
+      q: "Website toko online tidak bisa diakses karena dibanjiri jutaan request palsu. Ini pelanggaran…",
+      options: ["Confidentiality", "Integrity", "Availability", "Authentication"],
+      answer: 2,
+    },
+    {
+      q: "Server dengan software versi lama yang punya celah publik adalah contoh…",
+      options: ["Ancaman", "Kerentanan", "Aset", "Kontrol"],
+      answer: 1,
+    },
+    {
+      q: "Prinsip 'beri hak akses seminimal mungkin' disebut…",
+      options: ["Defense in depth", "Least privilege", "Default allow", "Zero day"],
+      answer: 1,
+    },
+  ]}
+/>

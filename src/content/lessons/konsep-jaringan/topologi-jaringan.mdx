@@ -1,0 +1,44 @@
+**Topologi** adalah cara perangkat-perangkat dalam jaringan disusun dan dihubungkan. Topologi memengaruhi biaya, kecepatan, dan ketahanan jaringan.
+
+<TopologyShapes />
+
+## Perbandingan
+
+| Topologi | Kelebihan | Kekurangan |
+|---|---|---|
+| **Bus** | murah, kabel sedikit | satu kabel utama rusak → seluruh jaringan mati |
+| **Star** | mudah dikelola, satu kabel rusak hanya memengaruhi satu host | pusat (switch) rusak → semua putus |
+| **Ring** | alur data teratur | satu node rusak bisa memutus ring |
+| **Mesh** | sangat andal, banyak jalur cadangan | mahal, rumit |
+
+## Topologi di dunia nyata
+
+- **LAN rumah/kantor** → hampir selalu **star** (semua kabel ke switch/router)
+- **Backbone Internet** → mendekati **mesh**, agar jika satu jalur putus data tetap bisa lewat jalur lain
+- **Jaringan besar** → **hybrid** (gabungan beberapa topologi)
+
+<Callout type="info" title="Topologi fisik vs logis">
+**Topologi fisik** = bagaimana kabel benar-benar terpasang. **Topologi logis** = bagaimana data mengalir. Jaringan dengan hub secara fisik berbentuk *star*, tapi secara logis berperilaku seperti *bus* — semua orang mendengar semua data!
+</Callout>
+
+## Dari sudut pandang keamanan
+
+- **Single point of failure** — pusat star (switch inti) atau kabel bus adalah target empuk serangan *Denial of Service* fisik maupun logis.
+- **Segmentasi** — memecah jaringan besar menjadi beberapa bagian membatasi pergerakan penyerang jika satu bagian berhasil dibobol.
+
+<Quiz
+  id="jaringan-topologi"
+  questions={[
+    {
+      q: "Topologi yang paling umum dipakai di LAN modern adalah…",
+      options: ["Bus", "Star", "Ring", "Mesh"],
+      answer: 1,
+    },
+    {
+      q: "Topologi mana yang paling tahan jika ada satu kabel putus?",
+      options: ["Bus", "Ring", "Mesh", "Star"],
+      answer: 2,
+      explanation: "Mesh punya banyak jalur alternatif, sehingga data bisa dialihkan.",
+    },
+  ]}
+/>

@@ -1,0 +1,85 @@
+Untuk memahami subnetting, kamu perlu sedikit **bilangan biner**. Tenang, hanya perlu menjumlahkan!
+
+## Biner: hanya 0 dan 1
+
+Komputer menyimpan semua angka dalam **biner**. Setiap oktet IP terdiri dari **8 bit**, dan setiap posisi bit punya nilai:
+
+| Posisi | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 |
+|---|---|---|---|---|---|---|---|---|
+| Nilai | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1 |
+
+Contoh: `11000000` = 128 + 64 = **192**. Coba sendiri:
+
+<BinaryConverter />
+
+## Network dan host
+
+Alamat IP terdiri dari dua bagian:
+
+- **Bagian network** — menunjukkan *jaringan mana* (seperti nama jalan)
+- **Bagian host** — menunjukkan *perangkat mana* di jaringan itu (seperti nomor rumah)
+
+Bagaimana kita tahu batasnya? Dengan **subnet mask**.
+
+## Subnet mask
+
+Subnet mask adalah 32 bit yang berisi deretan **1** (bagian network) diikuti deretan **0** (bagian host).
+
+```text
+IP          192.168.1.10   = 11000000.10101000.00000001.00001010
+Subnet mask 255.255.255.0  = 11111111.11111111.11111111.00000000
+                              └──────── network ────────┘└─host─┘
+```
+
+Jadi pada `192.168.1.10` dengan mask `255.255.255.0`, jaringannya adalah `192.168.1.x` dan host-nya adalah `.10`.
+
+## Notasi CIDR
+
+Menulis `255.255.255.0` itu panjang. **CIDR** menyingkatnya dengan **jumlah bit 1** di mask:
+
+| CIDR | Subnet mask | Jumlah host valid |
+|---|---|---|
+| `/8` | 255.0.0.0 | 16.777.214 |
+| `/16` | 255.255.0.0 | 65.534 |
+| `/24` | 255.255.255.0 | 254 |
+| `/25` | 255.255.255.128 | 126 |
+| `/26` | 255.255.255.192 | 62 |
+| `/27` | 255.255.255.224 | 30 |
+| `/28` | 255.255.255.240 | 14 |
+| `/30` | 255.255.255.252 | 2 |
+
+Jadi `192.168.1.10/24` = IP `192.168.1.10` dengan mask `255.255.255.0`.
+
+<Callout type="tip" title="Rumus jumlah host">
+Jumlah host valid = **2<sup>(32 − prefix)</sup> − 2**. Dikurangi 2 karena alamat pertama dipakai sebagai **alamat network** dan alamat terakhir sebagai **alamat broadcast**.
+</Callout>
+
+## Kenapa perangkat perlu tahu subnet mask?
+
+Untuk memutuskan: **apakah tujuan ada di jaringan yang sama?**
+
+- **Ya** → kirim langsung (pakai ARP untuk cari MAC tujuan)
+- **Tidak** → kirim ke **gateway** (router)
+
+<Quiz
+  id="ip-biner"
+  questions={[
+    {
+      q: "Berapa nilai desimal dari biner 10101000?",
+      options: ["168", "172", "160", "192"],
+      answer: 0,
+      explanation: "128 + 32 + 8 = 168.",
+    },
+    {
+      q: "/24 sama dengan subnet mask…",
+      options: ["255.0.0.0", "255.255.0.0", "255.255.255.0", "255.255.255.255"],
+      answer: 2,
+    },
+    {
+      q: "Berapa jumlah host valid pada /27?",
+      options: ["32", "30", "62", "14"],
+      answer: 1,
+      explanation: "2^(32−27) − 2 = 32 − 2 = 30.",
+    },
+  ]}
+/>

@@ -1,0 +1,102 @@
+Kriptografi adalah ilmu menjaga pesan tetap rahasia dan utuh. Ada tiga konsep yang sering tertukar: **encoding**, **enkripsi**, dan **hashing**. Memahami bedanya sangat penting!
+
+## Encoding — bukan pengamanan
+
+Encoding hanya **mengubah format** data agar bisa dikirim/disimpan dengan aman secara teknis. Siapa pun bisa membaliknya **tanpa kunci**.
+
+```bash
+$ echo -n halo | base64
+aGFsbw==
+$ echo aGFsbw== | base64 -d
+halo
+```
+
+Contoh: Base64, URL encoding (`%20`), hex. ⚠️ Menyimpan password dalam Base64 sama saja dengan menyimpannya dalam teks biasa!
+
+## Enkripsi — butuh kunci
+
+Enkripsi mengubah **plaintext** menjadi **ciphertext** yang hanya bisa dibalik oleh pemilik **kunci**.
+
+### Enkripsi simetris
+
+Satu kunci yang **sama** untuk mengenkripsi dan mendekripsi. Cepat, cocok untuk data besar.
+
+- Contoh: **AES**, ChaCha20
+- Masalah: bagaimana cara mengirim kuncinya dengan aman ke lawan bicara?
+
+### Enkripsi asimetris (kunci publik)
+
+Sepasang kunci: **kunci publik** (boleh disebar) dan **kunci privat** (rahasia).
+
+- Data yang dienkripsi dengan kunci publik **hanya** bisa dibuka dengan kunci privat pasangannya
+- Contoh: **RSA**, **ECC**
+- Lebih lambat, biasanya dipakai untuk bertukar kunci simetris dan untuk **tanda tangan digital**
+
+<Callout type="info" title="HTTPS memakai keduanya">
+Saat TLS handshake, server menunjukkan **sertifikat** berisi kunci publiknya. Kedua pihak memakai kriptografi asimetris untuk menyepakati **kunci sesi** simetris, lalu semua data dienkripsi dengan AES/ChaCha20 yang cepat.
+</Callout>
+
+## Hashing — sidik jari data
+
+Fungsi hash mengubah data **berukuran apa pun** menjadi "sidik jari" dengan **panjang tetap**. Sifatnya:
+
+1. **Satu arah** — tidak bisa dibalik menjadi data asli
+2. **Deterministik** — input yang sama selalu menghasilkan hash yang sama
+3. **Efek longsor (avalanche)** — ubah satu huruf, hasilnya berubah total
+4. **Tahan tabrakan** — sangat sulit menemukan dua input dengan hash sama
+
+```bash
+$ echo -n halo | sha256sum
+a4e63bcacf6c172a…  -
+$ echo -n Halo | sha256sum
+4e86512d9a0af8a7…  -      ← berbeda total!
+```
+
+| Algoritma | Panjang | Status |
+|---|---|---|
+| MD5 | 128 bit (32 hex) | ❌ rusak, jangan untuk keamanan |
+| SHA-1 | 160 bit | ❌ sudah ditemukan tabrakan |
+| SHA-256 | 256 bit (64 hex) | ✅ aman untuk integritas |
+| bcrypt / Argon2 | — | ✅ khusus untuk menyimpan password |
+
+### Kegunaan hash
+
+- **Cek integritas file** — situs resmi mencantumkan hash SHA-256 file unduhan. Jika hash file yang kamu unduh berbeda, file sudah berubah (rusak atau disisipi malware!)
+- **Menyimpan password** — server menyimpan hash, bukan password asli (dibahas di Modul 12)
+- **Tanda tangan digital** — yang ditandatangani adalah hash dokumen
+
+## Ringkasan
+
+| | Bisa dibalik? | Butuh kunci? | Tujuan |
+|---|---|---|---|
+| **Encoding** | ✅ ya, oleh siapa saja | ❌ | format data |
+| **Enkripsi** | ✅ ya, oleh pemilik kunci | ✅ | kerahasiaan |
+| **Hashing** | ❌ tidak | ❌ | integritas / verifikasi |
+
+<LabCTA labId="kripto-dasar" />
+
+<Quiz
+  id="sec-kripto"
+  questions={[
+    {
+      q: "Seorang developer menyimpan password user dalam Base64. Pernyataan yang benar…",
+      options: ["Aman karena sudah dienkripsi", "Tidak aman karena Base64 bisa dibalik siapa saja", "Aman jika memakai Base64 dua kali", "Sama amannya dengan SHA-256"],
+      answer: 1,
+    },
+    {
+      q: "Untuk memastikan file unduhan tidak dimodifikasi, kita memakai…",
+      options: ["Base64", "Hash SHA-256", "Enkripsi simetris", "Kompresi ZIP"],
+      answer: 1,
+    },
+    {
+      q: "Pada kriptografi asimetris, kunci yang boleh disebarkan adalah…",
+      options: ["Kunci privat", "Kunci publik", "Keduanya", "Tidak ada"],
+      answer: 1,
+    },
+    {
+      q: "Mengubah satu huruf input membuat hash berubah total. Sifat ini disebut…",
+      options: ["Efek longsor (avalanche)", "Enkripsi", "Kompresi", "Encoding"],
+      answer: 0,
+    },
+  ]}
+/>

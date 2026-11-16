@@ -1,0 +1,89 @@
+Alamat IP membawa paket sampai ke **komputer** yang benar. Tapi di komputer itu bisa berjalan banyak aplikasi sekaligus: web server, SSH, database, email… Bagaimana sistem tahu data harus diberikan ke aplikasi yang mana?
+
+Jawabannya: **nomor port** (Layer 4 — Transport).
+
+## Analogi hotel
+
+- **Alamat IP** = alamat hotel
+- **Port** = nomor kamar
+- **Socket** = kombinasi IP + port, misalnya `10.0.0.20:22` ("hotel 10.0.0.20, kamar 22")
+
+Nomor port berkisar **0–65535** dan dibagi menjadi:
+
+| Rentang | Nama | Keterangan |
+|---|---|---|
+| 0–1023 | **Well-known ports** | layanan standar, butuh hak root untuk membukanya |
+| 1024–49151 | Registered ports | aplikasi terdaftar (MySQL 3306, dll.) |
+| 49152–65535 | **Ephemeral ports** | port sementara yang dipakai *client* saat membuka koneksi |
+
+## Port-port penting yang wajib dihafal
+
+| Port | Protokol | Layanan |
+|---|---|---|
+| 20/21 | TCP | FTP (transfer file) |
+| 22 | TCP | **SSH** (remote login terenkripsi) |
+| 23 | TCP | Telnet (remote login **tidak** terenkripsi — hindari!) |
+| 25 | TCP | SMTP (kirim email) |
+| 53 | UDP/TCP | **DNS** |
+| 67/68 | UDP | **DHCP** |
+| 80 | TCP | **HTTP** |
+| 443 | TCP | **HTTPS** |
+| 3306 | TCP | MySQL |
+| 3389 | TCP | RDP (remote desktop Windows) |
+
+## Melihat port dari dalam: `ss`
+
+Di server, perintah `ss` (atau versi lamanya `netstat`) menampilkan port yang sedang **listening** (menunggu koneksi):
+
+```bash
+$ ss -tuln
+Netid  State   Local Address:Port
+tcp    LISTEN        0.0.0.0:22
+tcp    LISTEN        0.0.0.0:80
+tcp    LISTEN      127.0.0.1:3306
+```
+
+- `-t` TCP, `-u` UDP, `-l` hanya yang listening, `-n` tampilkan angka (bukan nama layanan)
+- `0.0.0.0:22` → menerima koneksi dari **semua** interface
+- `127.0.0.1:3306` → hanya menerima koneksi dari **server itu sendiri** (lebih aman untuk database!)
+
+## Mengetuk port dari luar: `nc` (netcat)
+
+```bash
+nc -zv srv 22        # apakah port 22 terbuka?
+nc -zv srv 20-30     # cek rentang port
+nc srv 22            # sambung dan baca "banner" layanan
+```
+
+Jawaban yang mungkin:
+
+- **succeeded** → port **terbuka** (ada layanan yang mendengarkan)
+- **Connection refused** → port **tertutup** (host aktif, tapi tidak ada layanan)
+- **timed out** → kemungkinan **difilter** firewall (paket dibuang diam-diam)
+
+<Callout type="info" title="Dari sudut pandang keamanan">
+Setiap port yang terbuka adalah **pintu masuk** potensial. Prinsip *attack surface reduction*: matikan layanan yang tidak dipakai, dan ikat layanan internal (seperti database) ke `127.0.0.1`. Penyerang memulai serangan dengan **port scanning** untuk menemukan pintu-pintu ini — kamu akan mempelajari `nmap` di Modul 10.
+</Callout>
+
+<LabCTA labId="port-layanan" />
+
+<Quiz
+  id="transport-port"
+  questions={[
+    {
+      q: "Web server HTTPS biasanya mendengarkan di port…",
+      options: ["22", "53", "80", "443"],
+      answer: 3,
+    },
+    {
+      q: "Output `ss` menunjukkan `127.0.0.1:3306`. Artinya…",
+      options: ["MySQL bisa diakses dari mana saja", "MySQL hanya bisa diakses dari server itu sendiri", "MySQL mati", "Port 3306 diblokir firewall"],
+      answer: 1,
+    },
+    {
+      q: "Hasil `Connection refused` saat mengetuk sebuah port berarti…",
+      options: ["Host mati", "Port tertutup tapi host aktif", "Password salah", "Kabel putus"],
+      answer: 1,
+    },
+  ]}
+/>

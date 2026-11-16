@@ -1,0 +1,73 @@
+Mari kenali "pemain-pemain" di dalam jaringan. Memahami perbedaan perangkat-perangkat ini sangat penting — bahkan untuk keamanan.
+
+## NIC (Network Interface Card)
+
+Kartu jaringan di dalam setiap host. Setiap NIC punya **alamat MAC** unik yang ditanam pabrik, contoh: `02:42:ac:11:00:02`. Di Linux, NIC muncul sebagai interface seperti `eth0` (kabel) atau `wlan0` (Wi-Fi).
+
+## Hub — si "pengeras suara"
+
+Hub adalah perangkat paling sederhana. Setiap sinyal yang masuk ke satu port akan **diulang ke SEMUA port lain**, tanpa peduli siapa tujuannya.
+
+- ❌ Boros bandwidth
+- ❌ **Tidak aman**: semua perangkat bisa "menguping" data milik orang lain
+- Sekarang sudah jarang dipakai
+
+## Switch — si "kurir pintar"
+
+Switch **mempelajari alamat MAC** setiap perangkat yang terhubung dan mencatatnya di **MAC address table**. Setelah tahu, frame hanya dikirim ke **port tujuan saja**.
+
+```text
+MAC Address Table
+MAC                 Port
+02:42:ac:01:00:10   p1
+02:42:ac:03:00:1e   p2
+```
+
+- ✅ Efisien
+- ✅ Lebih aman (tapi tetap bisa diserang — misalnya dengan ARP spoofing!)
+
+## Router — si "kantor pos antar kota"
+
+Router **menghubungkan jaringan yang berbeda** (misalnya LAN rumahmu dengan Internet) dan memilih jalur terbaik berdasarkan **alamat IP**. Router di rumahmu biasanya sekaligus berfungsi sebagai switch, access point Wi-Fi, dan firewall.
+
+## Access Point (AP)
+
+Menghubungkan perangkat **nirkabel** (Wi-Fi) ke jaringan kabel.
+
+## Firewall
+
+"Satpam" jaringan: memeriksa lalu lintas dan **mengizinkan atau memblokir** berdasarkan aturan. Bisa berupa perangkat khusus maupun software (seperti `iptables` di Linux).
+
+## Ringkasan
+
+| Perangkat | Bekerja di | Pakai alamat | Fungsi |
+|---|---|---|---|
+| Hub | Layer 1 | – | mengulang sinyal ke semua port |
+| Switch | Layer 2 | MAC | meneruskan frame ke port yang tepat |
+| Router | Layer 3 | IP | menghubungkan & meneruskan antar jaringan |
+| Firewall | Layer 3–7 | IP, port, dll. | menyaring lalu lintas |
+
+<Callout type="tip">
+Jangan khawatir soal "Layer 1, 2, 3" dulu — kamu akan memahaminya di modul **Model OSI**.
+</Callout>
+
+<Quiz
+  id="jaringan-perangkat"
+  questions={[
+    {
+      q: "Perangkat mana yang mengirim setiap frame ke SEMUA port?",
+      options: ["Switch", "Router", "Hub", "Firewall"],
+      answer: 2,
+    },
+    {
+      q: "Switch mengetahui port tujuan berdasarkan…",
+      options: ["Alamat IP", "MAC address table", "Nama domain", "Nomor port TCP"],
+      answer: 1,
+    },
+    {
+      q: "Perangkat yang menghubungkan jaringan rumah ke internet adalah…",
+      options: ["Hub", "Switch", "Router", "NIC"],
+      answer: 2,
+    },
+  ]}
+/>

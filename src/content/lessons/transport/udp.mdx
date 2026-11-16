@@ -1,0 +1,63 @@
+Tidak semua aplikasi butuh keandalan TCP. Kadang yang lebih penting adalah **kecepatan**. Untuk itu ada **UDP (User Datagram Protocol)**.
+
+## UDP: kirim dan lupakan
+
+UDP tidak melakukan handshake, tidak memberi nomor urut, dan tidak mengirim ulang data yang hilang. Pengirim cukup melempar paket (*datagram*) ke tujuan — seperti mengirim kartu pos: cepat, tapi tidak ada jaminan sampai.
+
+```text
+TCP:  SYN → SYN-ACK → ACK → data → ACK → … → FIN → FIN → ACK
+UDP:  data →
+      ← data (jika aplikasinya membalas)
+```
+
+## TCP vs UDP
+
+| | TCP | UDP |
+|---|---|---|
+| Koneksi | ada handshake | tanpa koneksi |
+| Keandalan | dijamin sampai & berurutan | tidak dijamin |
+| Kecepatan | lebih lambat (overhead) | lebih cepat, ringan |
+| Header | 20+ byte | 8 byte |
+| Cocok untuk | web, email, SSH, transfer file | DNS, DHCP, video call, game online, streaming, VoIP |
+
+## Kenapa game & video call memakai UDP?
+
+Dalam video call, data yang terlambat **tidak berguna**. Lebih baik satu frame hilang (gambar sedikit patah) daripada menunggu pengiriman ulang yang membuat percakapan tertunda. Aplikasinya sendiri yang mengatur cara menangani data yang hilang.
+
+## UDP di lab NetSec
+
+Kamu sebenarnya sudah melihat UDP beraksi:
+
+- **DNS** — query nama domain memakai UDP port **53**: satu pertanyaan, satu jawaban. Cepat!
+- **DHCP** — client (port 68) dan server (port 67) bertukar pesan UDP, bahkan sebelum client punya alamat IP.
+
+Kamu akan mempraktikkan keduanya di Modul 8.
+
+## Port UDP yang tertutup
+
+Karena UDP tidak punya RST, bagaimana kita tahu port UDP tertutup? Host tujuan membalas dengan pesan **ICMP Destination Port Unreachable** (type 3, code 3). Jika tidak ada balasan sama sekali, bisa jadi port terbuka tapi aplikasinya diam, atau paketnya difilter firewall — itulah kenapa scanning UDP lebih sulit dan lambat dibanding TCP.
+
+<Callout type="danger" title="UDP & serangan amplifikasi">
+Karena UDP tidak memverifikasi alamat pengirim, penyerang bisa memalsukan IP sumber (IP spoofing) menjadi IP korban, lalu mengirim query kecil ke banyak server DNS/NTP terbuka. Server-server itu mengirim jawaban yang **jauh lebih besar** ke korban. Ini disebut **DDoS amplification attack**.
+</Callout>
+
+<Quiz
+  id="transport-udp"
+  questions={[
+    {
+      q: "Protokol mana yang memakai three-way handshake?",
+      options: ["UDP", "TCP", "Keduanya", "Tidak keduanya"],
+      answer: 1,
+    },
+    {
+      q: "Aplikasi mana yang paling cocok memakai UDP?",
+      options: ["Mengunduh file installer", "Mengirim email", "Video call", "Login SSH"],
+      answer: 2,
+    },
+    {
+      q: "DNS biasanya memakai…",
+      options: ["TCP port 80", "UDP port 53", "UDP port 67", "TCP port 22"],
+      answer: 1,
+    },
+  ]}
+/>

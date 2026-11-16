@@ -1,0 +1,66 @@
+**TCP (Transmission Control Protocol)** adalah protokol transport yang **andal**: data dijamin sampai, berurutan, dan tanpa duplikat. Dipakai oleh web, email, SSH, dan hampir semua aplikasi yang tidak boleh kehilangan data.
+
+Agar bisa andal, TCP harus memastikan kedua pihak siap sebelum mengirim data. Proses ini disebut **three-way handshake**.
+
+## Three-way handshake
+
+<SequenceDiagram
+  title="Membuka koneksi TCP ke port 80"
+  actors={["Client", "Server :80"]}
+  steps={[
+    { from: 0, to: 1, label: "SYN (seq=0)", color: "#a78bfa", detail: "Client: 'Halo, saya mau membuka koneksi. Nomor urut saya mulai dari 0.'" },
+    { from: 1, to: 0, label: "SYN, ACK (seq=0, ack=1)", color: "#a78bfa", detail: "Server: 'Oke, saya siap! Nomor urut saya mulai dari 0, dan saya sudah menerima SYN-mu (ack=1).'" },
+    { from: 0, to: 1, label: "ACK (ack=1)", color: "#a78bfa", detail: "Client: 'Sip, saya terima.' Koneksi resmi terbuka (ESTABLISHED)." },
+    { from: 0, to: 1, label: "PSH, ACK + data HTTP", color: "#f472b6", detail: "Sekarang data aplikasi dikirim, misalnya 'GET / HTTP/1.1'." },
+    { from: 1, to: 0, label: "PSH, ACK + response", color: "#f472b6", detail: "Server membalas dengan data (HTTP/1.1 200 OK…). Setiap data dikonfirmasi dengan ACK." },
+    { from: 0, to: 1, label: "FIN, ACK", color: "#94a3b8", detail: "Client selesai: 'Saya mau menutup koneksi.'" },
+    { from: 1, to: 0, label: "FIN, ACK", color: "#94a3b8", detail: "Server: 'Oke, saya juga menutup.'" },
+    { from: 0, to: 1, label: "ACK", color: "#94a3b8", detail: "Konfirmasi terakhir. Koneksi ditutup dengan rapi." },
+  ]}
+/>
+
+## Flag TCP
+
+| Flag | Arti |
+|---|---|
+| **SYN** | *synchronize* — minta membuka koneksi |
+| **ACK** | *acknowledge* — konfirmasi data/segmen yang sudah diterima |
+| **PSH** | *push* — segera serahkan data ke aplikasi |
+| **FIN** | *finish* — menutup koneksi dengan sopan |
+| **RST** | *reset* — tolak/putus koneksi secara paksa |
+
+## Port tertutup → RST
+
+Jika client mengirim SYN ke port yang tidak ada layanannya, server langsung membalas **RST, ACK**: *"Tidak ada siapa-siapa di sini."* Itulah yang dilihat aplikasi sebagai `Connection refused`.
+
+## Nomor urut (sequence) dan ACK
+
+Setiap byte data diberi nomor urut. Penerima membalas dengan nomor ACK = *byte berikutnya yang ia harapkan*. Jika ada segmen hilang, pengirim tahu dan mengirim ulang (**retransmission**). Inilah yang membuat TCP andal.
+
+<Callout type="danger" title="Serangan di level TCP">
+- **SYN flood**: penyerang mengirim ribuan SYN tanpa pernah menyelesaikan handshake, sehingga server kehabisan memori untuk menyimpan koneksi setengah-terbuka (serangan DoS).
+- **Port scanning**: `nmap -sS` mengirim SYN ke banyak port; balasan SYN-ACK = terbuka, RST = tertutup, diam = difilter.
+</Callout>
+
+<LabCTA labId="tcp-handshake" />
+
+<Quiz
+  id="transport-tcp"
+  questions={[
+    {
+      q: "Urutan three-way handshake yang benar adalah…",
+      options: ["ACK → SYN → SYN-ACK", "SYN → SYN-ACK → ACK", "SYN → ACK → FIN", "FIN → ACK → SYN"],
+      answer: 1,
+    },
+    {
+      q: "Server membalas SYN dengan RST, ACK. Artinya…",
+      options: ["Port terbuka", "Port tertutup", "Koneksi berhasil", "Server sedang sibuk"],
+      answer: 1,
+    },
+    {
+      q: "Serangan yang mengirim banyak SYN tanpa menyelesaikan handshake disebut…",
+      options: ["ARP spoofing", "SYN flood", "SQL injection", "Phishing"],
+      answer: 1,
+    },
+  ]}
+/>

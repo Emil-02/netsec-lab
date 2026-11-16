@@ -1,0 +1,64 @@
+Di Modul 4 kamu belajar bahwa alamat seperti `192.168.x.x` adalah **IP privat** yang **tidak bisa dipakai di Internet**. Lalu bagaimana laptop di rumahmu yang ber-IP `192.168.1.10` bisa membuka YouTube?
+
+Jawabannya: **NAT (Network Address Translation)**.
+
+## Masalah: IPv4 tidak cukup
+
+IPv4 hanya punya sekitar 4,3 miliar alamat, padahal perangkat di dunia jauh lebih banyak. Solusinya: setiap rumah/kantor memakai **IP privat** di dalam, dan hanya **satu IP publik** (dari ISP) untuk keluar ke Internet.
+
+Router di Internet **menolak** meneruskan paket ke alamat privat — karena jutaan rumah memakai `192.168.1.10` yang sama, router tidak mungkin tahu harus dikirim ke rumah yang mana!
+
+## Cara kerja NAT (masquerade / PAT)
+
+Router rumah **menyamarkan** paket keluar: alamat sumber privat diganti dengan IP publik router, lalu dicatat di **tabel NAT**. Saat balasan datang, router melihat tabelnya dan mengembalikan alamat tujuannya ke perangkat yang benar.
+
+<SequenceDiagram
+  title="NAT di router rumah"
+  actors={["Laptop 192.168.1.10", "Router 203.0.113.2", "Server 198.51.100.80"]}
+  steps={[
+    { from: 0, to: 1, label: "src 192.168.1.10:51235", color: "#a78bfa", detail: "Laptop mengirim request ke server. Alamat sumbernya masih IP privat." },
+    { from: 1, to: 2, label: "src 203.0.113.2:51235", color: "#22d3ee", detail: "Router mengganti alamat sumber menjadi IP publiknya dan mencatat: '51235 ke 198.51.100.80 = milik 192.168.1.10'." },
+    { from: 2, to: 1, label: "dst 203.0.113.2:51235", color: "#22d3ee", detail: "Server membalas ke IP publik router. Server tidak pernah tahu IP privat laptop!" },
+    { from: 1, to: 0, label: "dst 192.168.1.10:51235", color: "#a78bfa", detail: "Router mencocokkan balasan dengan tabel NAT, lalu mengembalikan alamat tujuan ke 192.168.1.10." },
+  ]}
+/>
+
+Karena banyak perangkat berbagi satu IP publik, router membedakan mereka memakai **nomor port**. Karena itu teknik ini juga disebut **PAT (Port Address Translation)** atau **NAT overload**. Di Linux disebut **MASQUERADE**:
+
+```bash
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+```
+
+- `-t nat` — pakai tabel NAT
+- `-A POSTROUTING` — tambahkan aturan di tahap *setelah* routing (tepat sebelum paket keluar)
+- `-o eth1` — hanya untuk paket yang **keluar** lewat eth1 (sisi Internet)
+- `-j MASQUERADE` — ganti alamat sumber dengan IP milik eth1
+
+## NAT dan keamanan
+
+- ✅ Perangkat di dalam **tidak bisa dihubungi langsung** dari Internet, karena tidak ada entri di tabel NAT untuk koneksi yang datang dari luar. Ini memberi perlindungan tambahan.
+- ⚠️ Tapi **NAT bukan firewall**! Malware di dalam jaringan tetap bisa membuka koneksi keluar dengan bebas.
+- Untuk membuat server di dalam bisa diakses dari luar, admin memakai **port forwarding** (DNAT).
+
+<LabCTA labId="nat" />
+
+<Quiz
+  id="routing-nat"
+  questions={[
+    {
+      q: "Laptop 192.168.1.10 membuka website melalui router NAT dengan IP publik 203.0.113.2. IP apa yang dilihat web server?",
+      options: ["192.168.1.10", "203.0.113.2", "192.168.1.1", "127.0.0.1"],
+      answer: 1,
+    },
+    {
+      q: "Bagaimana router NAT tahu balasan harus dikirim ke laptop atau HP di rumah yang sama?",
+      options: ["Menebak", "Berdasarkan tabel NAT (alamat + nomor port)", "Mengirim ke semua perangkat", "Bertanya ke ISP"],
+      answer: 1,
+    },
+    {
+      q: "Pernyataan yang benar tentang NAT…",
+      options: ["NAT sama dengan firewall", "NAT mengenkripsi lalu lintas", "NAT memungkinkan banyak perangkat berbagi satu IP publik", "NAT menghapus kebutuhan router"],
+      answer: 2,
+    },
+  ]}
+/>

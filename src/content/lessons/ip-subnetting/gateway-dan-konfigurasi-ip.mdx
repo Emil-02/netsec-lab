@@ -1,0 +1,86 @@
+Sebuah perangkat butuh setidaknya **tiga** hal agar bisa berkomunikasi di luar jaringannya:
+
+1. **Alamat IP** — identitas di jaringan
+2. **Subnet mask / prefix** — untuk tahu siapa yang "tetangga" (satu jaringan)
+3. **Default gateway** — "pintu keluar" ke jaringan lain (biasanya IP router)
+
+(Dan untuk mengakses nama domain seperti `google.com`, ia juga butuh **DNS server** — dibahas di modul Layanan Aplikasi.)
+
+## Bagaimana perangkat memutuskan ke mana mengirim paket?
+
+```text
+Tujuan ada di jaringan saya?  (dicek dengan subnet mask)
+├── YA    → kirim langsung ke tujuan (ARP untuk cari MAC-nya)
+└── TIDAK → kirim ke default gateway (ARP untuk cari MAC router)
+```
+
+Tanpa gateway, perangkat **hanya** bisa berkomunikasi dengan tetangga di subnet yang sama. Mencoba menjangkau jaringan lain akan menghasilkan error:
+
+```text
+ping: connect: Network is unreachable
+```
+
+## Melihat konfigurasi di Linux
+
+```bash
+ip a          # alamat IP setiap interface (ip addr)
+ip route      # tabel routing, termasuk default gateway
+```
+
+Contoh output `ip route`:
+
+```text
+default via 192.168.10.1 dev eth0
+192.168.10.0/24 dev eth0 proto kernel scope link src 192.168.10.50
+```
+
+- Baris `default via ...` = default gateway
+- Baris kedua = jaringan yang terhubung langsung (dibuat otomatis dari IP + prefix)
+
+## Mengubah konfigurasi
+
+Mengubah konfigurasi jaringan butuh hak admin, jadi gunakan `sudo`:
+
+```bash
+sudo ip addr add 192.168.10.50/24 dev eth0      # pasang IP
+sudo ip route add default via 192.168.10.1      # atur default gateway
+sudo ip addr del 192.168.10.50/24 dev eth0      # hapus IP
+```
+
+<Callout type="warning" title="Hindari alamat terlarang & konflik IP">
+- Jangan pakai **alamat network** (contoh `.0`) atau **broadcast** (contoh `.255`)
+- Jangan pakai IP yang **sudah dipakai** perangkat lain — terjadi **IP conflict** dan komunikasi jadi kacau
+- Di jaringan nyata, IP biasanya dibagikan otomatis oleh **DHCP** untuk mencegah konflik
+</Callout>
+
+## Alur troubleshooting dasar
+
+1. `ip a` — apakah interface punya IP yang benar dan statusnya UP?
+2. `ping <IP gateway>` — apakah bisa menjangkau router?
+3. `ip route` — apakah default gateway sudah diatur?
+4. `ping <IP tujuan>` — apakah tujuan akhir bisa dijangkau?
+5. `traceroute <tujuan>` — di router mana paket berhenti?
+
+<LabCTA labId="konfigurasi-ip" />
+
+<Quiz
+  id="ip-gateway"
+  questions={[
+    {
+      q: "PC 192.168.1.10/24 ingin mengirim paket ke 8.8.8.8. Ke mana paket dikirim pertama kali?",
+      options: ["Langsung ke 8.8.8.8", "Ke default gateway", "Ke broadcast", "Ke 127.0.0.1"],
+      answer: 1,
+      explanation: "8.8.8.8 tidak berada di 192.168.1.0/24, jadi paket dikirim ke gateway.",
+    },
+    {
+      q: "Pesan 'Network is unreachable' biasanya berarti…",
+      options: ["Kabel putus", "Tidak ada rute (misalnya default gateway belum diatur)", "Server sedang mati", "Password salah"],
+      answer: 1,
+    },
+    {
+      q: "Perintah untuk melihat default gateway di Linux adalah…",
+      options: ["ip route", "ls -l", "arp -a", "whoami"],
+      answer: 0,
+    },
+  ]}
+/>

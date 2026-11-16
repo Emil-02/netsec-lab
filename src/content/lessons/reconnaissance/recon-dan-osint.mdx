@@ -1,0 +1,64 @@
+**Reconnaissance** (recon) adalah tahap **mengumpulkan informasi** tentang target sebelum melakukan apa pun. Dalam pentest resmi maupun serangan sungguhan, tahap ini sering memakan waktu paling lama — dan paling menentukan.
+
+> "Beri aku enam jam untuk menebang pohon, dan aku akan menghabiskan empat jam pertama untuk mengasah kapak."
+
+## Tahapan pengujian keamanan
+
+```text
+1. Reconnaissance   → apa saja yang ada? (host, layanan, orang, teknologi)
+2. Scanning         → port & layanan apa yang terbuka? versinya?
+3. Analisis celah   → adakah versi lama / konfigurasi salah?
+4. Eksploitasi      → (hanya dengan izin!) membuktikan celah bisa dimanfaatkan
+5. Pelaporan        → temuan + rekomendasi perbaikan
+```
+
+## Recon pasif vs aktif
+
+| | Pasif | Aktif |
+|---|---|---|
+| Berinteraksi langsung dengan target? | ❌ tidak | ✅ ya |
+| Terdeteksi target? | hampir mustahil | bisa tercatat di log/IDS |
+| Contoh | OSINT, mesin pencari, DNS publik, media sosial, lowongan kerja | ping sweep, port scan, banner grabbing |
+
+### OSINT (Open Source Intelligence)
+
+Informasi publik yang sering membocorkan banyak hal:
+
+- **Website & robots.txt** — halaman tersembunyi, teknologi yang dipakai
+- **DNS** — subdomain seperti `dev.`, `vpn.`, `mail.` (`dig`, `nslookup`)
+- **Media sosial & LinkedIn** — nama karyawan → format email & username
+- **Lowongan kerja** — "dicari admin berpengalaman Windows Server 2012" → teknologi lama!
+- **Metadata dokumen** — nama penulis, versi software di file PDF/Office
+
+<Callout type="warning" title="Sisi pembela">
+Lakukan recon terhadap organisasimu sendiri secara rutin. Apa yang bisa kamu temukan, bisa ditemukan penyerang juga. Kurangi informasi yang tidak perlu dibuka: banner versi, halaman debug, subdomain lama, metadata dokumen.
+</Callout>
+
+## Etika & hukum (lagi!)
+
+Scanning aktif terhadap sistem orang lain **tanpa izin tertulis** bisa melanggar UU ITE (akses tanpa hak). Seorang pentester profesional selalu memegang:
+
+- **Surat izin / kontrak** yang ditandatangani pemilik sistem
+- **Scope** — rentang IP dan sistem yang boleh diuji
+- **Rules of engagement** — kapan boleh menguji, teknik apa yang dilarang (misalnya DoS)
+
+<Quiz
+  id="recon-dasar"
+  questions={[
+    {
+      q: "Mencari nama-nama karyawan di LinkedIn untuk menebak format email perusahaan termasuk…",
+      options: ["Recon aktif", "Recon pasif (OSINT)", "Eksploitasi", "DoS"],
+      answer: 1,
+    },
+    {
+      q: "Port scanning termasuk recon…",
+      options: ["Pasif", "Aktif", "Bukan recon", "Fisik"],
+      answer: 1,
+    },
+    {
+      q: "Dokumen yang menentukan sistem mana saja yang boleh diuji disebut…",
+      options: ["Exploit", "Scope", "Payload", "Banner"],
+      answer: 1,
+    },
+  ]}
+/>

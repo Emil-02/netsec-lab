@@ -1,0 +1,105 @@
+**nmap** (*Network Mapper*) adalah alat scanning paling terkenal di dunia, dipakai oleh admin jaringan, auditor, dan pentester. Kamu sudah mengenal semua fondasinya — ARP, ICMP, TCP handshake, RST — dan nmap hanya memanfaatkan perilaku itu secara sistematis.
+
+## 1. Host discovery: siapa yang hidup?
+
+```bash
+sudo nmap -sn 10.10.10.0/24
+```
+
+`-sn` = hanya cari host, tanpa port scan. Caranya bergantung pada lokasi target:
+
+- **Satu LAN** → kirim **ARP request** ke setiap alamat. Tidak bisa diblokir firewall IP, karena ARP bekerja di Layer 2!
+- **Jaringan lain** → ICMP echo, TCP SYN ke port 443, TCP ACK ke port 80, dll.
+
+## 2. Port scanning: pintu mana yang terbuka?
+
+### SYN scan (`-sS`, default jika memakai sudo)
+
+<SequenceDiagram
+  title="SYN scan (half-open)"
+  actors={["nmap", "Target"]}
+  steps={[
+    { from: 0, to: 1, label: "SYN ke port 22", color: "#a78bfa", detail: "nmap mengirim SYN seperti hendak membuka koneksi." },
+    { from: 1, to: 0, label: "SYN, ACK", color: "#34d399", detail: "Target menjawab SYN-ACK → port OPEN (ada layanan yang mendengarkan)." },
+    { from: 0, to: 1, label: "RST", color: "#94a3b8", detail: "nmap langsung memutus dengan RST, tanpa menyelesaikan handshake. Karena itu disebut 'half-open'." },
+    { from: 0, to: 1, label: "SYN ke port 23", color: "#a78bfa", detail: "Port lain dicoba." },
+    { from: 1, to: 0, label: "RST, ACK", color: "#f87171", detail: "Target menjawab RST → port CLOSED (host hidup, tapi tidak ada layanan)." },
+  ]}
+/>
+
+### Connect scan (`-sT`, default tanpa sudo)
+
+nmap menyelesaikan three-way handshake penuh memakai fungsi biasa sistem operasi. Lebih lambat dan lebih mudah tercatat di log aplikasi, tapi tidak butuh hak root.
+
+### UDP scan (`-sU`)
+
+Lebih lambat dan kurang pasti: port tertutup dijawab ICMP *port unreachable*, sedangkan port terbuka sering diam saja → hasil `open|filtered`.
+
+## Status port
+
+| Status | Artinya | Respons yang diterima |
+|---|---|---|
+| **open** | ada layanan yang mendengarkan | SYN-ACK |
+| **closed** | host hidup, tidak ada layanan | RST |
+| **filtered** | firewall menghalangi, status tidak diketahui | tidak ada jawaban / ICMP unreachable |
+
+## 3. Opsi penting
+
+```bash
+nmap 10.0.0.5               # scan ~1000 port paling umum
+nmap -p 22,80,443 10.0.0.5  # port tertentu
+nmap -p- 10.0.0.5           # SEMUA 65535 port
+nmap -sV 10.0.0.5           # deteksi versi layanan
+sudo nmap -O 10.0.0.5       # tebak sistem operasi
+nmap -A 10.0.0.5            # agresif: -sV -O + lainnya
+nmap -Pn 10.0.0.5           # lewati host discovery (jika ping diblokir)
+```
+
+<Callout type="tip" title="Scan default tidak memeriksa semua port">
+Tanpa `-p-`, nmap hanya memeriksa sekitar 1000 port terpopuler. Layanan yang berjalan di port "aneh" (misalnya 31337) akan terlewat. Admin kadang mengira memindahkan layanan ke port tinggi membuatnya aman — padahal tidak!
+</Callout>
+
+## Membaca hasil
+
+```text
+PORT     STATE  SERVICE  VERSION
+22/tcp   open   ssh      OpenSSH 7.6p1 Ubuntu 4ubuntu0.7
+445/tcp  open   microsoft-ds  Samba smbd 4.7.6-Ubuntu
+```
+
+Versi software adalah informasi emas: penyerang mencocokkannya dengan database celah publik (CVE). Bagi pembela, ini daftar **apa yang harus segera di-update**.
+
+## Dari sisi pembela
+
+- Port scan meninggalkan jejak: banyak SYN dari satu IP ke banyak port dalam waktu singkat → mudah dideteksi IDS
+- Tutup port yang tidak dipakai, pasang firewall *default deny* (Modul 13)
+- Sembunyikan atau minimalkan banner versi
+- Lakukan scan terhadap jaringan sendiri secara rutin
+
+<LabCTA labId="nmap-recon" />
+
+<Quiz
+  id="recon-nmap"
+  questions={[
+    {
+      q: "Target membalas SYN dengan SYN-ACK. Status port tersebut adalah…",
+      options: ["open", "closed", "filtered", "unknown"],
+      answer: 0,
+    },
+    {
+      q: "Tidak ada jawaban sama sekali dari target untuk port 22. nmap akan melaporkan…",
+      options: ["open", "closed", "filtered", "down"],
+      answer: 2,
+    },
+    {
+      q: "Opsi nmap untuk memeriksa semua 65535 port adalah…",
+      options: ["-sn", "-p-", "-O", "-Pn"],
+      answer: 1,
+    },
+    {
+      q: "Kenapa `nmap -sn` di LAN tetap bisa menemukan host yang memblokir ping?",
+      options: ["Karena memakai ARP di Layer 2", "Karena memakai DNS", "Karena menebak", "Karena memakai HTTP"],
+      answer: 0,
+    },
+  ]}
+/>

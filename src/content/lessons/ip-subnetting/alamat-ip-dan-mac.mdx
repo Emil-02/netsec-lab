@@ -1,0 +1,72 @@
+Setiap perangkat di jaringan punya **dua jenis alamat**: alamat **MAC** dan alamat **IP**. Keduanya punya peran berbeda.
+
+## Alamat MAC (Layer 2)
+
+- Panjang **48 bit**, ditulis dalam heksadesimal: `02:42:ac:11:00:02`
+- **Ditanam di NIC** oleh pabrik (walau bisa dipalsukan secara software)
+- Dipakai untuk komunikasi **di dalam satu jaringan lokal**
+- 3 byte pertama = kode vendor pembuat (OUI)
+
+Analogi: **nomor KTP** — melekat pada orangnya, tidak berubah walau pindah rumah.
+
+## Alamat IP (Layer 3)
+
+- IPv4 panjangnya **32 bit**, ditulis sebagai 4 angka desimal (oktet): `192.168.1.10`
+- Setiap oktet bernilai **0–255**
+- **Diatur secara logis** — bisa diubah, tergantung jaringan tempat perangkat berada
+- Dipakai untuk komunikasi **antar jaringan** (routing)
+
+Analogi: **alamat rumah** — berubah saat kamu pindah.
+
+| | MAC | IP |
+|---|---|---|
+| Layer | 2 (Data Link) | 3 (Network) |
+| Panjang | 48 bit | 32 bit (IPv4) |
+| Contoh | `02:42:ac:11:00:02` | `192.168.1.10` |
+| Cakupan | jaringan lokal | lintas jaringan |
+| Diatur oleh | pabrik NIC | admin / DHCP |
+
+## IP privat vs publik
+
+Tidak semua IP bisa dipakai di Internet. Ada rentang khusus untuk **jaringan privat** (LAN):
+
+| Rentang privat | CIDR |
+|---|---|
+| `10.0.0.0` – `10.255.255.255` | `10.0.0.0/8` |
+| `172.16.0.0` – `172.31.255.255` | `172.16.0.0/12` |
+| `192.168.0.0` – `192.168.255.255` | `192.168.0.0/16` |
+
+IP privat tidak bisa diakses langsung dari Internet. Router rumahmu memakai **NAT** untuk menerjemahkan banyak IP privat menjadi satu IP publik (dibahas di modul Routing).
+
+## Alamat-alamat spesial
+
+- `127.0.0.1` — **localhost / loopback**, menunjuk ke perangkat itu sendiri
+- `0.0.0.0` — "semua alamat" / belum punya alamat
+- `255.255.255.255` — broadcast ke semua di jaringan lokal
+
+## IPv6 sekilas
+
+IPv4 hanya punya sekitar 4,3 miliar alamat — sudah habis! **IPv6** memakai **128 bit**, contoh: `2001:db8::1`. Jumlah alamatnya hampir tak terbatas. Untuk saat ini kita fokus ke IPv4 dulu.
+
+<Quiz
+  id="ip-mac"
+  questions={[
+    {
+      q: "Manakah alamat IPv4 yang TIDAK valid?",
+      options: ["10.0.0.1", "192.168.1.256", "172.16.5.4", "8.8.8.8"],
+      answer: 1,
+      explanation: "Setiap oktet maksimal 255.",
+    },
+    {
+      q: "Manakah IP privat?",
+      options: ["8.8.8.8", "172.20.1.1", "1.1.1.1", "203.0.113.5"],
+      answer: 1,
+      explanation: "172.16.0.0 – 172.31.255.255 adalah rentang privat.",
+    },
+    {
+      q: "Alamat yang dipakai untuk komunikasi di dalam satu LAN (hop-ke-hop) adalah…",
+      options: ["IP publik", "MAC address", "Nama domain", "Nomor port"],
+      answer: 1,
+    },
+  ]}
+/>

@@ -1,0 +1,49 @@
+Saatnya mencoba lab interaktif! Sebelum mulai, kenali dulu bagian-bagian layar lab.
+
+## Tampilan lab
+
+| Bagian | Fungsi |
+|---|---|
+| **Panel tujuan** (kiri) | Cerita lab, daftar tujuan yang harus diselesaikan, dan petunjuk |
+| **Terminal** (tengah) | Tempat kamu mengetik perintah ke perangkat virtual |
+| **Peta jaringan** (kanan atas) | Visualisasi perangkat dan kabel. Paket data muncul sebagai titik berwarna yang bergerak |
+| **Panel Paket / Perangkat** (kanan bawah) | Daftar semua paket yang lewat (mirip Wireshark), isi paket, dan detail perangkat |
+
+## Warna paket
+
+Setiap protokol punya warna berbeda di peta:
+
+- 🟡 **ARP** — "Siapa yang punya alamat IP ini?"
+- 🔵 **ICMP** — paket `ping`
+- 🟣 **TCP**, 🟢 **UDP**, 🩷 **HTTP** — akan kamu temui di modul berikutnya
+
+## Perintah pertamamu: `ping`
+
+`ping` adalah perintah untuk **mengecek apakah perangkat lain bisa dijangkau**. Cara kerjanya seperti berteriak "Halo?" dan menunggu jawaban "Halo juga!".
+
+```bash
+ping 192.168.1.20
+```
+
+Output-nya kira-kira seperti ini:
+
+```text
+PING 192.168.1.20 (192.168.1.20) 56(84) bytes of data.
+64 bytes from 192.168.1.20: icmp_seq=1 ttl=64 time=0.42 ms
+```
+
+Artinya: paket sampai, dan perangkat tujuan membalas. 🎉
+
+<Callout type="tip" title="Perhatikan peta saat ping pertama kali">
+Sebelum paket `ping` (biru) dikirim, kamu akan melihat paket **ARP** (kuning) dikirim ke **semua** perangkat. Itu karena laptopmu perlu tahu dulu **alamat MAC** milik tujuan. Kita akan bahas ini secara mendalam di modul Layer 2. Untuk sekarang, cukup amati saja!
+</Callout>
+
+## Tips terminal
+
+- **Enter** — jalankan perintah
+- **↑ / ↓** — ulangi perintah sebelumnya
+- **Tab** — lengkapi perintah/nama file otomatis
+- **Ctrl + C** — batalkan perintah yang sedang berjalan
+- `clear` — bersihkan layar
+
+<LabCTA labId="tur-lab" />

@@ -1,0 +1,71 @@
+Subnetting adalah **memecah satu jaringan besar menjadi beberapa jaringan kecil** (subnet). Tujuannya: efisiensi alamat, performa, dan — yang penting — **keamanan** melalui segmentasi.
+
+## Empat hal yang harus bisa kamu hitung
+
+Untuk sebuah IP dan prefix, cari:
+
+1. **Alamat network** — alamat pertama (semua bit host = 0)
+2. **Alamat broadcast** — alamat terakhir (semua bit host = 1)
+3. **Host pertama & terakhir** — rentang yang bisa dipakai perangkat
+4. **Jumlah host valid**
+
+## Cara cepat: metode "block size"
+
+Contoh: **`192.168.10.77/26`**
+
+**Langkah 1** — Tentukan oktet yang "menarik". /26 berarti mask `255.255.255.192`. Oktet yang bukan 255 dan bukan 0 adalah oktet ke-4 (nilai **192**).
+
+**Langkah 2** — Hitung **block size** = 256 − 192 = **64**. Subnet-nya akan berkelipatan 64: `.0`, `.64`, `.128`, `.192`.
+
+**Langkah 3** — Cari blok yang memuat **77**: 77 ada di antara 64 dan 128.
+
+**Langkah 4** — Tulis hasilnya:
+
+| | Nilai |
+|---|---|
+| Alamat network | `192.168.10.64` |
+| Host pertama | `192.168.10.65` |
+| Host terakhir | `192.168.10.126` |
+| Broadcast | `192.168.10.127` |
+| Jumlah host | 2⁶ − 2 = **62** |
+
+## Coba dengan kalkulator interaktif
+
+Ubah IP dan geser prefix-nya. Perhatikan bit **network** (biru) dan bit **host** (kuning) berubah:
+
+<SubnetCalculator defaultIp="192.168.10.77" defaultPrefix={26} />
+
+<Callout type="info" title="Subnetting & keamanan">
+Bayangkan kantor yang memisahkan jaringan **staf**, **tamu Wi-Fi**, dan **server** ke subnet berbeda. Jika laptop tamu terinfeksi malware, ia tidak bisa langsung menjangkau server karena lalu lintasnya harus melewati router/firewall yang bisa memblokirnya.
+</Callout>
+
+## Latihan mandiri
+
+Hitung dengan metode block size, lalu cek jawabanmu dengan kalkulator di atas:
+
+1. `10.0.0.130/25` → network? broadcast?
+2. `172.16.5.20/28` → host pertama? host terakhir?
+3. `192.168.1.200/30` → berapa host valid?
+
+<Quiz
+  id="ip-subnet-hitung"
+  questions={[
+    {
+      q: "Apa alamat network dari 192.168.1.130/25?",
+      options: ["192.168.1.0", "192.168.1.128", "192.168.1.129", "192.168.1.255"],
+      answer: 1,
+      explanation: "Block size 128 → subnet .0 dan .128. 130 ada di blok .128.",
+    },
+    {
+      q: "Apa alamat broadcast dari 10.10.10.10/28?",
+      options: ["10.10.10.15", "10.10.10.16", "10.10.10.31", "10.10.10.255"],
+      answer: 0,
+      explanation: "Block size 16 → blok .0 sampai .15. Broadcast = .15.",
+    },
+    {
+      q: "Subnet /30 biasanya dipakai untuk menghubungkan dua router. Berapa host valid-nya?",
+      options: ["4", "2", "6", "1"],
+      answer: 1,
+    },
+  ]}
+/>

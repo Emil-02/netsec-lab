@@ -1,0 +1,62 @@
+Kekuatan sejati command line ada di sini: **menggabungkan perintah-perintah kecil** menjadi alat analisis yang hebat. Ini adalah keterampilan sehari-hari seorang **analis keamanan** saat membaca log.
+
+## Mencari teks dengan `grep`
+
+`grep` menampilkan **hanya baris yang mengandung pola tertentu**.
+
+```bash
+grep Failed /var/log/auth.log        # baris yang mengandung "Failed"
+grep -i failed /var/log/auth.log     # -i: abaikan huruf besar/kecil
+grep -v Accepted /var/log/auth.log   # -v: baris yang TIDAK mengandung
+```
+
+## Pipe `|` — menyambung perintah
+
+Simbol `|` (pipe) mengalirkan **output** satu perintah menjadi **input** perintah berikutnya, seperti pipa air.
+
+```bash
+cat /var/log/auth.log | grep Failed | wc -l
+```
+
+1. `cat` mengeluarkan semua baris log
+2. `grep Failed` menyaring hanya percobaan login gagal
+3. `wc -l` menghitung jumlah barisnya
+
+## Alat bantu lain
+
+| Perintah | Fungsi |
+|---|---|
+| `wc -l` | hitung jumlah baris |
+| `head -n 5` | tampilkan 5 baris pertama |
+| `tail -n 5` | tampilkan 5 baris terakhir |
+
+## Menyimpan hasil analisis
+
+Gabungkan pipe dengan redirect untuk membuat laporan:
+
+```bash
+grep Failed /var/log/auth.log > ~/gagal.txt
+echo "IP mencurigakan: 10.0.0.66" > ~/laporan.txt
+```
+
+<Callout type="info" title="Dunia nyata: membaca log auth">
+File `/var/log/auth.log` di server Linux mencatat setiap upaya login. Ratusan baris `Failed password` dari IP yang sama dalam waktu singkat adalah tanda klasik serangan **brute force**. Kamu akan mempelajari serangan ini lebih dalam di modul Serangan Password.
+</Callout>
+
+<LabCTA labId="linux-log-hunt" />
+
+<Quiz
+  id="linux-pipe"
+  questions={[
+    {
+      q: "Apa fungsi simbol `|`?",
+      options: ["Menulis ke file", "Mengirim output satu perintah ke input perintah lain", "Menjalankan sebagai root", "Komentar"],
+      answer: 1,
+    },
+    {
+      q: "Perintah untuk menghitung berapa baris di auth.log yang mengandung 'Failed'?",
+      options: ["grep Failed /var/log/auth.log | wc -l", "wc -l Failed", "cat Failed | grep", "head Failed /var/log/auth.log"],
+      answer: 0,
+    },
+  ]}
+/>

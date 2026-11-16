@@ -1,0 +1,74 @@
+Setiap perangkat yang berbicara IP — PC, server, apalagi router — punya **tabel routing**: daftar aturan yang menjawab pertanyaan *"paket ke alamat ini harus dikirim lewat mana?"*
+
+## Membaca tabel routing
+
+```bash
+$ ip route
+default via 192.168.1.1 dev eth0
+192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.10
+10.50.0.0/16 via 192.168.1.254 dev eth0
+```
+
+| Baris | Arti |
+|---|---|
+| `192.168.1.0/24 dev eth0` | **Connected route**: jaringan yang terhubung langsung. Dibuat otomatis saat interface diberi IP |
+| `10.50.0.0/16 via 192.168.1.254` | **Static route**: dibuat manual oleh admin — "untuk 10.50.x.x, serahkan ke router .254" |
+| `default via 192.168.1.1` | **Default route** (`0.0.0.0/0`): "untuk tujuan lain yang tidak dikenal, serahkan ke gateway" |
+
+## Aturan emas: longest prefix match
+
+Sebuah alamat bisa cocok dengan **beberapa** baris sekaligus. Router selalu memilih rute yang **paling spesifik** — yaitu yang prefix-nya **paling panjang**.
+
+Coba ketik beberapa alamat tujuan di bawah ini dan perhatikan rute mana yang dipilih:
+
+<RoutingTableDemo
+  defaultDst="10.50.7.9"
+  routes={[
+    { dest: "default", via: "203.0.113.1", iface: "eth1" },
+    { dest: "10.0.0.0/8", via: "192.168.1.254", iface: "eth0" },
+    { dest: "10.50.0.0/16", via: "192.168.1.253", iface: "eth0" },
+    { dest: "10.50.7.0/24", via: "langsung", iface: "eth2" },
+    { dest: "192.168.1.0/24", via: "langsung", iface: "eth0" },
+  ]}
+/>
+
+Coba juga: `10.99.1.1`, `192.168.1.77`, `8.8.8.8`.
+
+<Callout type="info" title="Default route = /0">
+`default` sama dengan `0.0.0.0/0` — prefix sepanjang **nol bit**, sehingga cocok dengan **semua** alamat, tapi selalu kalah dari rute lain yang lebih spesifik. Itulah kenapa ia berfungsi sebagai "pilihan terakhir".
+</Callout>
+
+## Apa yang terjadi di setiap router?
+
+1. Terima paket, cek IP tujuan
+2. Kurangi **TTL** sebanyak 1 (jika menjadi 0 → buang, kirim ICMP *Time Exceeded*)
+3. Cari rute di tabel routing (longest prefix match)
+4. Tidak ada rute? Buang paket, kirim ICMP **Destination Net Unreachable** ke pengirim
+5. Ada rute? Cari MAC hop berikutnya (ARP), bungkus ulang dengan header Ethernet baru, kirim
+
+## Static vs dynamic routing
+
+- **Static routing** — admin menulis rute secara manual. Sederhana dan aman, tapi tidak bisa beradaptasi jika ada link yang putus.
+- **Dynamic routing** — router saling bertukar informasi rute secara otomatis memakai protokol seperti **OSPF**, **RIP**, atau **BGP** (protokol yang menyatukan seluruh Internet!).
+
+<Quiz
+  id="routing-tabel"
+  questions={[
+    {
+      q: "Router punya rute 10.0.0.0/8 dan 10.1.0.0/16. Paket ke 10.1.2.3 akan memakai rute…",
+      options: ["10.0.0.0/8", "10.1.0.0/16", "default", "Keduanya bergantian"],
+      answer: 1,
+      explanation: "Keduanya cocok, tapi /16 lebih spesifik (prefix lebih panjang).",
+    },
+    {
+      q: "Apa yang dilakukan router jika tidak ada rute yang cocok dan tidak ada default route?",
+      options: ["Mengirim ke semua port", "Membuang paket dan mengirim ICMP Destination Net Unreachable", "Menyimpan paket selamanya", "Mengirim balik paket yang sama"],
+      answer: 1,
+    },
+    {
+      q: "Rute `192.168.1.0/24 dev eth0` tanpa 'via' artinya…",
+      options: ["Jaringan terhubung langsung ke eth0", "Rute ke internet", "Rute yang rusak", "Rute ke DNS"],
+      answer: 0,
+    },
+  ]}
+/>

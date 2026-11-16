@@ -1,0 +1,103 @@
+**Firewall** adalah "satpam" jaringan: ia memeriksa setiap paket dan memutuskan apakah paket itu boleh lewat atau tidak, berdasarkan aturan yang kita buat. Di Linux, firewall bawaan kernel bernama **netfilter**, dan alat klasik untuk mengaturnya adalah `iptables`.
+
+## Chain: di mana paket diperiksa?
+
+```text
+                 ┌─────────── FORWARD ───────────┐
+paket masuk ──▶ routing ──┤                          ├──▶ paket keluar
+                 └── INPUT ──▶ [proses lokal] ──▶ OUTPUT ──┘
+```
+
+| Chain | Untuk paket yang… |
+|---|---|
+| **INPUT** | ditujukan **ke** perangkat ini (misal koneksi SSH ke server) |
+| **OUTPUT** | dibuat **oleh** perangkat ini |
+| **FORWARD** | hanya **numpang lewat** (router/firewall jaringan) |
+
+## Aturan & target
+
+Aturan diperiksa **dari atas ke bawah**. Aturan pertama yang cocok menentukan nasib paket. Jika tidak ada yang cocok, berlaku **policy** chain.
+
+| Target | Efek |
+|---|---|
+| `ACCEPT` | izinkan |
+| `DROP` | buang diam-diam (pengirim hanya menunggu → *timeout*, nmap: `filtered`) |
+| `REJECT` | tolak dan beri tahu pengirim (ICMP unreachable atau TCP RST) |
+| `LOG` | catat ke log kernel, lalu **lanjut** ke aturan berikutnya |
+
+## Perintah dasar
+
+```bash
+sudo iptables -L -n -v --line-numbers      # lihat aturan + penghitung paket
+sudo iptables -A INPUT <kecocokan> -j <target>   # tambah di akhir
+sudo iptables -I INPUT 1 <kecocokan> -j <target> # sisipkan di posisi 1
+sudo iptables -D INPUT 2                    # hapus aturan nomor 2
+sudo iptables -P INPUT DROP                 # ubah policy
+sudo iptables -F                            # hapus semua aturan
+```
+
+Kecocokan yang sering dipakai:
+
+| Opsi | Arti |
+|---|---|
+| `-p tcp` / `-p udp` / `-p icmp` | protokol |
+| `--dport 22` | port tujuan |
+| `-s 10.0.0.5` / `-s 10.0.0.0/24` | alamat sumber |
+| `-i eth0` | interface masuk |
+| `-m state --state ESTABLISHED,RELATED` | paket balasan dari koneksi yang sudah ada |
+
+## Pola emas: default deny
+
+```bash
+# 1. izinkan balasan untuk koneksi yang sudah terjalin
+sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# 2. izinkan layanan publik
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+# 3. izinkan SSH hanya dari jaringan admin
+sudo iptables -A INPUT -p tcp --dport 22 -s 10.0.0.5 -j ACCEPT
+# 4. tolak semua yang lain
+sudo iptables -P INPUT DROP
+```
+
+<Callout type="warning" title="Jangan mengunci diri sendiri!">
+Jika kamu mengelola server dari jauh lewat SSH dan mengubah policy ke DROP **sebelum** mengizinkan SSH, koneksimu langsung terputus dan kamu tidak bisa masuk lagi. Selalu pasang aturan ACCEPT terlebih dahulu.
+</Callout>
+
+## Stateful firewall
+
+Firewall modern bersifat **stateful**: ia melacak koneksi (*connection tracking*). Paket SYN baru berstatus **NEW**, sedangkan paket balasannya berstatus **ESTABLISHED**. Dengan satu aturan `ESTABLISHED,RELATED`, server tetap bisa menerima balasan dari koneksi yang ia buat sendiri (misalnya mengunduh update), tanpa membuka port apa pun.
+
+## Alat lain
+
+- **ufw** (Ubuntu) dan **firewalld** (Red Hat) — antarmuka yang lebih ramah untuk netfilter
+- **nftables** — pengganti modern iptables
+- **Firewall jaringan** (perangkat khusus / *next-generation firewall*) — memeriksa hingga Layer 7
+
+<LabCTA labId="firewall-server" />
+
+<Quiz
+  id="def-firewall"
+  questions={[
+    {
+      q: "Koneksi SSH dari luar ke server diperiksa di chain…",
+      options: ["OUTPUT", "INPUT", "FORWARD", "POSTROUTING"],
+      answer: 1,
+    },
+    {
+      q: "Apa beda DROP dan REJECT?",
+      options: ["Tidak ada bedanya", "DROP diam-diam, REJECT memberi tahu pengirim", "DROP hanya untuk UDP", "REJECT mencatat ke log"],
+      answer: 1,
+    },
+    {
+      q: "Aturan iptables diperiksa…",
+      options: ["Dari bawah ke atas", "Acak", "Dari atas ke bawah, aturan pertama yang cocok menang", "Semua sekaligus"],
+      answer: 2,
+    },
+    {
+      q: "Setelah `iptables -P INPUT DROP`, server tidak bisa menerima balasan saat mengunduh update. Aturan apa yang kurang?",
+      options: ["--dport 80", "-m state --state ESTABLISHED,RELATED -j ACCEPT", "-j LOG", "-P OUTPUT DROP"],
+      answer: 1,
+    },
+  ]}
+/>

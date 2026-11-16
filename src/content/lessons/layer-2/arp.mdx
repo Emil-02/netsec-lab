@@ -1,0 +1,76 @@
+Kamu sudah tahu bahwa setiap perangkat punya **alamat IP** (Layer 3) dan **alamat MAC** (Layer 2). Tapi ada masalah: aplikasi hanya tahu IP tujuan, sedangkan kartu jaringan hanya bisa mengirim frame ke **alamat MAC**. Lalu bagaimana laptop tahu MAC milik `192.168.1.20`?
+
+Jawabannya: **ARP (Address Resolution Protocol)**.
+
+## Cara kerja ARP
+
+Bayangkan kamu masuk ke kelas dan berteriak: *"Siapa yang bernama Budi? Tolong angkat tangan!"* Semua orang mendengar, tapi hanya Budi yang menjawab. Itulah ARP.
+
+<SequenceDiagram
+  title="ARP: mencari MAC milik 192.168.1.20"
+  actors={["Laptop .10", "Switch", "PC .20", "Printer .30"]}
+  steps={[
+    { from: 0, to: "all", label: "ARP Request (broadcast)", color: "#f59e0b", detail: "Laptop mengirim ke ff:ff:ff:ff:ff:ff: 'Siapa yang punya 192.168.1.20? Beritahu 192.168.1.10.' Switch meneruskan broadcast ke SEMUA port." },
+    { from: 2, to: 0, label: "ARP Reply (unicast)", color: "#f59e0b", detail: "Hanya PC .20 yang menjawab, langsung ke laptop: '192.168.1.20 ada di 02:42:ac:03:00:1e.' Printer mengabaikan request tadi." },
+    { from: 0, to: 2, label: "ICMP / data", color: "#22d3ee", detail: "Sekarang laptop tahu MAC tujuan dan bisa mengirim frame berisi paket IP. Hasilnya disimpan di tabel ARP (cache) agar tidak perlu bertanya lagi." },
+  ]}
+/>
+
+| | ARP Request | ARP Reply |
+|---|---|---|
+| Dikirim ke | **broadcast** `ff:ff:ff:ff:ff:ff` | **unicast** ke penanya |
+| Isi | "Siapa punya IP X?" | "IP X ada di MAC Y" |
+| Diterima oleh | semua di LAN | hanya penanya |
+
+## Tabel ARP (ARP cache)
+
+Agar tidak bertanya setiap kali mengirim paket, hasil ARP disimpan sementara di **tabel ARP**:
+
+```bash
+ip neigh        # cara modern
+arp -a          # cara lama
+```
+
+```text
+192.168.1.20 dev eth0 lladdr 02:42:ac:03:00:1e REACHABLE
+192.168.1.1  dev eth0 lladdr 02:42:ac:05:00:2b REACHABLE
+```
+
+## ARP hanya untuk tetangga!
+
+Ini konsep yang sering membuat bingung. ARP **tidak pernah melewati router**. Jika tujuan berada di jaringan lain, laptop **tidak** mencari MAC tujuan — ia mencari MAC **default gateway**, lalu menyerahkan paket ke router.
+
+```text
+Ping ke 10.0.0.5 (jaringan lain):
+  1. 10.0.0.5 bukan tetangga (beda subnet) → kirim ke gateway 192.168.1.1
+  2. ARP: "Siapa punya 192.168.1.1?"           ← yang dicari MAC router!
+  3. Frame: MAC tujuan = router, IP tujuan = 10.0.0.5
+```
+
+<Callout type="danger" title="ARP tidak punya autentikasi">
+Perangkat mana pun bisa mengirim ARP Reply palsu: *"192.168.1.1 ada di MAC saya!"* — dan korban akan mempercayainya. Serangan ini disebut **ARP spoofing / ARP poisoning**, dasar dari serangan *man-in-the-middle*. Kamu akan mempraktikkannya di Modul 11.
+</Callout>
+
+<LabCTA labId="arp" />
+
+<Quiz
+  id="l2-arp"
+  questions={[
+    {
+      q: "ARP Request dikirim ke alamat MAC…",
+      options: ["MAC router", "ff:ff:ff:ff:ff:ff (broadcast)", "00:00:00:00:00:00", "MAC tujuan"],
+      answer: 1,
+    },
+    {
+      q: "Laptop 192.168.1.10/24 ingin mengirim paket ke 8.8.8.8. MAC siapa yang dicari dengan ARP?",
+      options: ["8.8.8.8", "Default gateway", "Semua perangkat", "DNS server"],
+      answer: 1,
+      explanation: "8.8.8.8 berada di luar subnet, jadi paket diserahkan ke gateway. ARP hanya bekerja di dalam satu LAN.",
+    },
+    {
+      q: "Kenapa ARP rentan diserang?",
+      options: ["Karena memakai enkripsi lemah", "Karena tidak ada verifikasi siapa yang menjawab", "Karena hanya bekerja di Wi-Fi", "Karena memakai port 80"],
+      answer: 1,
+    },
+  ]}
+/>

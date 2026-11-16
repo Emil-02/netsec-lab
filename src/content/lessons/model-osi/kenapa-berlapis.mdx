@@ -1,0 +1,44 @@
+Mengirim satu pesan WhatsApp melibatkan banyak hal sekaligus: aplikasi, enkripsi, nomor port, alamat IP, alamat MAC, sinyal Wi-Fi… Bagaimana semua itu diatur? Jawabannya: **dibagi menjadi lapisan-lapisan (layer)**.
+
+## Analogi: mengirim paket lewat ekspedisi
+
+1. Kamu menulis **surat** (isi pesan)
+2. Surat dimasukkan ke **amplop** bertuliskan nama penerima
+3. Amplop dimasukkan ke **kardus** berlabel alamat lengkap kota tujuan
+4. Kardus dinaikkan ke **truk** kurir
+
+Setiap lapisan punya tugas sendiri dan **tidak perlu tahu** urusan lapisan lain. Sopir truk tidak perlu membaca suratmu; kamu tidak perlu tahu rute truk.
+
+## Keuntungan model berlapis
+
+- 🧩 **Modular** — setiap lapisan bisa diganti tanpa mengubah yang lain. Contoh: kamu bisa ganti kabel LAN ke Wi-Fi tanpa mengubah browser.
+- 🤝 **Standar bersama** — perangkat dari vendor berbeda bisa saling bicara.
+- 🔍 **Troubleshooting lebih mudah** — "Kabelnya tersambung? (Layer 1) Dapat IP? (Layer 3) Port-nya terbuka? (Layer 4)"
+- 🛡️ **Analisis keamanan** — setiap serangan bisa dipetakan ke layer tertentu.
+
+## Dua model yang perlu kamu tahu
+
+| Model | Jumlah layer | Kegunaan |
+|---|---|---|
+| **OSI** | 7 | model **konseptual** untuk belajar & diskusi |
+| **TCP/IP** | 4 | model yang **benar-benar dipakai** di Internet |
+
+<Callout type="info">
+Para profesional sering berkata "itu masalah Layer 2" atau "firewall Layer 7". Mereka merujuk ke nomor layer **OSI**. Jadi meskipun Internet memakai TCP/IP, kamu tetap wajib hafal OSI!
+</Callout>
+
+<Quiz
+  id="osi-kenapa"
+  questions={[
+    {
+      q: "Apa keuntungan utama model berlapis?",
+      options: ["Membuat jaringan lebih lambat", "Setiap lapisan punya tugas sendiri dan bisa diganti secara independen", "Menghapus kebutuhan protokol", "Hanya untuk keamanan"],
+      answer: 1,
+    },
+    {
+      q: "Model yang benar-benar dipakai di Internet adalah…",
+      options: ["OSI", "TCP/IP", "Bus", "LAN"],
+      answer: 1,
+    },
+  ]}
+/>

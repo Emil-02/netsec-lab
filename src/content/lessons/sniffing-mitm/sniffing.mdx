@@ -1,0 +1,79 @@
+**Sniffing** adalah menangkap dan membaca paket yang lewat di jaringan. Bagi admin, ini alat diagnosis yang luar biasa. Bagi penyerang, ini cara mencuri data yang dikirim tanpa enkripsi.
+
+## Promiscuous mode
+
+Normalnya, kartu jaringan **membuang** frame yang MAC tujuannya bukan miliknya (ingat tanda ✕ di peta lab). Dalam **promiscuous mode**, kartu jaringan menerima **semua** frame yang sampai kepadanya. Alat sniffing seperti `tcpdump` dan Wireshark mengaktifkan mode ini — karena itu butuh hak root.
+
+## Apa yang bisa disadap?
+
+| Jaringan | Yang terlihat oleh sniffer |
+|---|---|
+| **Hub** | semua lalu lintas semua perangkat |
+| **Switch** | hanya lalu lintas milik sendiri + broadcast (ARP, DHCP) |
+| **Wi-Fi terbuka** | semua lalu lintas di udara (tanpa enkripsi Wi-Fi) |
+
+Switch mempersulit sniffing, tapi tidak membuatnya mustahil — penyerang bisa memakai **ARP spoofing** atau **MAC flooding** untuk menarik lalu lintas ke dirinya (materi berikutnya).
+
+## tcpdump
+
+```bash
+sudo tcpdump -i eth0                  # semua paket di eth0
+sudo tcpdump arp                      # hanya ARP
+sudo tcpdump icmp                     # hanya ping
+sudo tcpdump tcp port 80              # hanya HTTP
+sudo tcpdump host 10.0.0.5            # hanya paket dari/ke 10.0.0.5
+sudo tcpdump -A tcp port 80           # tampilkan isi paket sebagai teks
+sudo tcpdump -c 10                    # berhenti setelah 10 paket
+```
+
+Contoh output:
+
+```text
+10:00:02.820000 IP 10.3.0.21.51235 > 10.3.0.80.80: Flags [S], seq 0, length 0
+10:00:05.720000 IP 10.3.0.21.51235 > 10.3.0.80.80: Flags [P.], length 174: HTTP: POST /login
+```
+
+`[S]` = SYN, `[S.]` = SYN-ACK, `[.]` = ACK, `[P.]` = PSH-ACK (data), `[F.]` = FIN, `[R]` = RST.
+
+## Protokol yang berbahaya disadap
+
+Protokol lama mengirim semuanya, termasuk password, sebagai **teks biasa**:
+
+| Protokol tidak aman | Pengganti yang aman |
+|---|---|
+| HTTP (80) | **HTTPS** (443) |
+| Telnet (23) | **SSH** (22) |
+| FTP (21) | **SFTP** / FTPS |
+| POP3/IMAP tanpa TLS | POP3S / IMAPS |
+
+<Callout type="danger" title="Etika sniffing">
+Menyadap lalu lintas orang lain tanpa izin melanggar hukum (UU ITE Pasal 31 tentang intersepsi). Di lab ini kamu berperan sebagai **auditor** yang ditugaskan membuktikan risiko — dan laporan audit yang baik tidak menyebarkan rahasia yang ditemukan.
+</Callout>
+
+<LabCTA labId="sniffing" />
+
+<Quiz
+  id="mitm-sniffing"
+  questions={[
+    {
+      q: "Kenapa tcpdump membutuhkan hak root?",
+      options: ["Karena memakai internet", "Karena mengaktifkan promiscuous mode dan membaca paket mentah", "Karena menghapus file", "Karena memakai port 80"],
+      answer: 1,
+    },
+    {
+      q: "Di jaringan yang memakai switch, sniffer biasa terutama hanya melihat…",
+      options: ["Semua lalu lintas", "Lalu lintas sendiri dan broadcast", "Tidak ada sama sekali", "Hanya HTTPS"],
+      answer: 1,
+    },
+    {
+      q: "Filter tcpdump untuk menangkap lalu lintas web HTTP adalah…",
+      options: ["tcpdump arp", "tcpdump tcp port 80", "tcpdump udp port 53", "tcpdump icmp"],
+      answer: 1,
+    },
+    {
+      q: "Pengganti aman untuk Telnet adalah…",
+      options: ["FTP", "HTTP", "SSH", "SMTP"],
+      answer: 2,
+    },
+  ]}
+/>

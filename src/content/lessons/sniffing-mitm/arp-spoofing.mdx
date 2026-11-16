@@ -1,0 +1,73 @@
+Di Modul 5 kamu belajar bahwa ARP **tidak punya autentikasi**: perangkat mana pun bisa mengaku sebagai pemilik sebuah alamat IP. Kelemahan ini dimanfaatkan dalam serangan **ARP spoofing** (atau *ARP poisoning*) untuk menjadi **man-in-the-middle (MITM)**.
+
+## Cara kerjanya (konsep)
+
+<SequenceDiagram
+  title="ARP spoofing: menyisipkan diri di antara korban dan router"
+  actors={["Korban .10", "Penyerang .66", "Router .1"]}
+  steps={[
+    { from: 1, to: 0, label: "ARP Reply palsu: '.1 ada di MAC penyerang'", color: "#f87171", detail: "Penyerang mengirim ARP reply yang tidak pernah diminta. Korban menimpa tabel ARP-nya: IP router kini dipetakan ke MAC penyerang." },
+    { from: 0, to: 1, label: "Paket ke internet", color: "#f472b6", detail: "Korban mengira sedang mengirim ke router, padahal frame-nya sampai ke penyerang. Penyerang bisa membaca isinya." },
+    { from: 1, to: 2, label: "Diteruskan ke router asli", color: "#a78bfa", detail: "Agar korban tidak curiga, penyerang meneruskan paket ke router asli (IP forwarding). Internet korban tetap jalan — hanya sedikit lebih lambat." },
+    { from: 2, to: 0, label: "Balasan", color: "#94a3b8", detail: "Jika penyerang juga meracuni tabel ARP router, balasan dari internet pun melewati penyerang (MITM dua arah)." },
+  ]}
+/>
+
+Akibatnya, penyerang dapat:
+
+- 👂 **Menyadap** semua lalu lintas tanpa enkripsi
+- ✏️ **Memodifikasi** data yang lewat (misalnya menyisipkan skrip ke halaman HTTP)
+- ⛔ **Memutus** koneksi korban (DoS) jika tidak meneruskan paket
+- 🎭 Mencoba **SSL stripping** — memaksa korban memakai HTTP alih-alih HTTPS
+
+## Tanda-tanda terkena ARP spoofing
+
+1. **Dua IP berbeda punya MAC yang sama** di tabel ARP
+   ```text
+   ? (192.168.1.1)  at 02:42:ac:03:00:1e [ether] on eth0
+   ? (192.168.1.66) at 02:42:ac:03:00:1e [ether] on eth0   ← sama!
+   ```
+2. **Hop pertama `traceroute`** bukan default gateway, melainkan IP lain di LAN
+3. MAC gateway **berubah** dari yang biasanya
+4. Banyak **ARP reply yang tidak diminta** terlihat di `tcpdump arp`
+5. Peringatan sertifikat HTTPS yang aneh di browser
+
+## Pertahanan
+
+| Pertahanan | Cara kerja |
+|---|---|
+| **HTTPS / TLS di mana-mana** | walaupun lalu lintas disadap, isinya terenkripsi dan sertifikat palsu terdeteksi |
+| **Entri ARP statis** | `sudo arp -s <ip-gateway> <mac-asli>` — tidak bisa ditimpa ARP palsu (cocok untuk perangkat penting) |
+| **Dynamic ARP Inspection (DAI)** | fitur switch yang memeriksa setiap ARP reply terhadap tabel DHCP snooping dan membuang yang palsu |
+| **Port security** | membatasi MAC yang boleh di setiap port switch |
+| **VLAN & segmentasi** | penyerang hanya bisa meracuni perangkat di VLAN yang sama |
+| **Monitoring** | alat seperti *arpwatch* memberi peringatan saat pemetaan IP–MAC berubah |
+| **VPN** | mengenkripsi seluruh lalu lintas, terutama di Wi-Fi publik |
+
+<LabCTA labId="deteksi-arp-spoofing" />
+
+<Quiz
+  id="mitm-arp"
+  questions={[
+    {
+      q: "Kenapa ARP spoofing bisa berhasil?",
+      options: ["Karena ARP memakai enkripsi lemah", "Karena perangkat menerima ARP reply tanpa verifikasi", "Karena router rusak", "Karena memakai UDP"],
+      answer: 1,
+    },
+    {
+      q: "Bukti kuat ARP spoofing di tabel ARP adalah…",
+      options: ["Tabel ARP kosong", "Dua IP berbeda dengan MAC yang sama", "MAC berawalan 02", "Ada entri broadcast"],
+      answer: 1,
+    },
+    {
+      q: "Fitur switch yang membuang ARP reply palsu disebut…",
+      options: ["VLAN trunk", "Dynamic ARP Inspection", "NAT", "Spanning Tree"],
+      answer: 1,
+    },
+    {
+      q: "Pertahanan terbaik agar data tetap aman meskipun lalu lintas disadap adalah…",
+      options: ["Mematikan Wi-Fi", "Memakai enkripsi (HTTPS/VPN)", "Mengganti kabel", "Memperbanyak switch"],
+      answer: 1,
+    },
+  ]}
+/>

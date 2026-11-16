@@ -1,0 +1,87 @@
+Linux adalah sistem **multi-user**: banyak orang bisa memakai satu komputer, dan setiap file punya **pemilik** serta **izin akses**. Ini adalah salah satu fondasi keamanan paling penting.
+
+## User biasa vs root
+
+- **User biasa** (contoh: `siswa`) — hanya bisa mengubah file miliknya sendiri
+- **root** — superuser/admin, bisa melakukan **apa saja** di sistem
+
+Bekerja sebagai root setiap saat itu berbahaya: satu salah ketik bisa merusak sistem, dan kalau akunmu dibobol, penyerang langsung punya kekuasaan penuh.
+
+## `sudo` — pinjam kekuasaan admin sebentar
+
+```bash
+cat /var/log/keamanan.log          # ❌ Permission denied
+sudo cat /var/log/keamanan.log     # ✅ dijalankan sebagai root
+```
+
+`sudo` (**s**uper**u**ser **do**) menjalankan **satu perintah** dengan hak root, lalu kembali menjadi user biasa.
+
+<Callout type="warning">
+Dengan kekuatan besar, datang tanggung jawab besar. Gunakan `sudo` hanya saat benar-benar perlu.
+</Callout>
+
+## Membaca izin file dengan `ls -l`
+
+```text
+-rwxr-xr-- 1 siswa siswa  120 Nov 15 10:00 backup.sh
+│└┬┘└┬┘└┬┘   └─┬─┘
+│ │  │  │      └── pemilik file
+│ │  │  └── izin untuk LAINNYA (others)
+│ │  └── izin untuk GRUP
+│ └── izin untuk PEMILIK (user)
+└── tipe: - = file, d = direktori
+```
+
+| Huruf | Arti | Nilai |
+|---|---|---|
+| `r` | read — boleh membaca | 4 |
+| `w` | write — boleh mengubah | 2 |
+| `x` | execute — boleh menjalankan | 1 |
+| `-` | tidak diizinkan | 0 |
+
+## Notasi angka (oktal)
+
+Jumlahkan nilai untuk setiap kelompok:
+
+- `rwx` = 4+2+1 = **7**
+- `r-x` = 4+0+1 = **5**
+- `r--` = 4+0+0 = **4**
+- `rw-` = 4+2+0 = **6**
+
+Jadi `rwxr-xr-x` = **755**, dan `rw-r--r--` = **644**.
+
+## Mengubah izin: `chmod`
+
+```bash
+chmod 755 skrip.sh      # pemilik: rwx, lainnya: r-x  → bisa dijalankan
+chmod 600 rahasia.txt   # hanya pemilik yang bisa baca & tulis
+```
+
+<Callout type="danger" title="Jangan chmod 777!">
+`777` artinya **semua orang** boleh membaca, mengubah, dan menjalankan file. Ini salah satu kesalahan konfigurasi paling umum yang dimanfaatkan penyerang.
+</Callout>
+
+<LabCTA labId="linux-permission" />
+
+<Quiz
+  id="linux-permission"
+  questions={[
+    {
+      q: "Izin `rw-r-----` dalam angka oktal adalah…",
+      options: ["640", "644", "750", "600"],
+      answer: 0,
+      explanation: "rw- = 6, r-- = 4, --- = 0 → 640.",
+    },
+    {
+      q: "File berisi password database sebaiknya diberi izin…",
+      options: ["777", "755", "644", "600"],
+      answer: 3,
+      explanation: "600: hanya pemilik yang bisa membaca & menulis.",
+    },
+    {
+      q: "Apa fungsi `sudo`?",
+      options: ["Menghapus user", "Menjalankan satu perintah dengan hak root", "Login permanen sebagai root", "Mengubah password"],
+      answer: 1,
+    },
+  ]}
+/>

@@ -1,0 +1,75 @@
+Di Modul 4 kamu mengatur IP, subnet mask, dan gateway secara manual. Bayangkan harus melakukannya untuk 500 laptop di kampus — dan memastikan tidak ada yang bentrok! Untungnya ada **DHCP (Dynamic Host Configuration Protocol)** yang membagikan konfigurasi jaringan **secara otomatis**.
+
+## Apa yang diberikan DHCP?
+
+- ✅ **Alamat IP** + subnet mask
+- ✅ **Default gateway**
+- ✅ **DNS server**
+- ✅ **Lease time** — berapa lama alamat itu boleh dipakai sebelum harus diperpanjang
+
+DHCP server biasanya berjalan di **router** (rumah/kantor kecil) atau di server khusus (jaringan besar).
+
+## Proses DORA
+
+<SequenceDiagram
+  title="DHCP: Discover, Offer, Request, Acknowledge"
+  actors={["Laptop (belum ada IP)", "Switch", "DHCP Server"]}
+  steps={[
+    { from: 0, to: "all", label: "DISCOVER (broadcast)", color: "#facc15", detail: "Dari 0.0.0.0 ke 255.255.255.255 (UDP 68 → 67): 'Halo semua! Saya belum punya IP. Adakah DHCP server?'" },
+    { from: 2, to: 0, label: "OFFER: 192.168.1.100", color: "#facc15", detail: "Server menawarkan: 'Pakai 192.168.1.100/24, gateway 192.168.1.1, DNS 192.168.1.1, berlaku 12 jam.'" },
+    { from: 0, to: "all", label: "REQUEST (broadcast)", color: "#facc15", detail: "Laptop: 'Saya terima tawaran 192.168.1.100 dari server itu.' Dikirim broadcast agar server lain (jika ada) tahu tawarannya ditolak." },
+    { from: 2, to: 0, label: "ACK", color: "#34d399", detail: "Server: 'Disetujui!' Laptop memasang IP, gateway, dan DNS. Selesai!" },
+  ]}
+/>
+
+Kenapa memakai broadcast? Karena laptop **belum punya IP** dan **belum tahu alamat DHCP server** — satu-satunya cara adalah "berteriak" ke seluruh LAN.
+
+## Di Linux
+
+```bash
+sudo dhclient -v eth0     # minta IP via DHCP
+sudo dhclient -r eth0     # lepaskan (release) IP
+ip a                      # cek IP yang didapat
+ip route                  # cek gateway yang didapat
+cat /etc/resolv.conf      # cek DNS yang didapat
+```
+
+## DHCP vs IP statis
+
+| | DHCP (dinamis) | Statis |
+|---|---|---|
+| Cocok untuk | laptop, HP, PC pengguna | server, printer, router |
+| Kelebihan | otomatis, tanpa bentrok | alamat selalu sama, mudah ditemukan |
+| Kekurangan | alamat bisa berubah | harus diatur manual satu per satu |
+
+Banyak admin memakai **DHCP reservation**: server DHCP selalu memberi IP yang sama untuk MAC tertentu (misalnya printer).
+
+<Callout type="danger" title="Serangan terhadap DHCP">
+- **Rogue DHCP server**: penyerang menjalankan DHCP server palsu di LAN dan memberikan **gateway/DNS milik penyerang** ke korban → semua lalu lintas korban lewat penyerang (man-in-the-middle).
+- **DHCP starvation**: penyerang meminta ribuan IP dengan MAC palsu sampai pool habis, sehingga pengguna sah tidak mendapat IP.
+
+Pertahanannya: fitur **DHCP snooping** di switch, yang hanya mengizinkan balasan DHCP dari port tepercaya.
+</Callout>
+
+<LabCTA labId="dhcp" />
+
+<Quiz
+  id="app-dhcp"
+  questions={[
+    {
+      q: "Urutan proses DHCP yang benar adalah…",
+      options: ["Request, Offer, Discover, Ack", "Discover, Offer, Request, Acknowledge", "Offer, Discover, Ack, Request", "Discover, Request, Offer, Ack"],
+      answer: 1,
+    },
+    {
+      q: "Kenapa DHCP Discover dikirim secara broadcast?",
+      options: ["Agar lebih cepat", "Karena client belum punya IP dan belum tahu alamat server", "Karena memakai TCP", "Agar terenkripsi"],
+      answer: 1,
+    },
+    {
+      q: "Penyerang menjalankan DHCP server palsu yang memberi gateway miliknya. Serangan ini disebut…",
+      options: ["Rogue DHCP", "SQL injection", "Brute force", "Phishing"],
+      answer: 0,
+    },
+  ]}
+/>

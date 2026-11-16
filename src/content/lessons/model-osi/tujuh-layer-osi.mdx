@@ -1,0 +1,66 @@
+Model **OSI** (*Open Systems Interconnection*) membagi komunikasi jaringan menjadi **7 layer**. Layer 7 paling dekat dengan pengguna, Layer 1 paling dekat dengan kabel.
+
+<OsiLayers />
+
+## Cara mengingat
+
+Dari **atas ke bawah** (7 → 1):
+
+> **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing
+> *Application, Presentation, Session, Transport, Network, Data Link, Physical*
+
+Dari **bawah ke atas** (1 → 7):
+
+> **P**lease **D**o **N**ot **T**hrow **S**ausage **P**izza **A**way
+
+## PDU — nama data di setiap layer
+
+Data punya "nama" berbeda tergantung di layer mana ia berada:
+
+| Layer | PDU (Protocol Data Unit) |
+|---|---|
+| 5–7 | **Data** |
+| 4 | **Segment** (TCP) / Datagram (UDP) |
+| 3 | **Packet** |
+| 2 | **Frame** |
+| 1 | **Bit** |
+
+## Serangan di setiap layer
+
+Inilah kenapa OSI penting untuk keamanan — setiap layer punya ancamannya sendiri:
+
+| Layer | Contoh serangan |
+|---|---|
+| 7 Application | SQL Injection, XSS, phishing |
+| 6 Presentation | serangan pada enkripsi lemah (SSL stripping) |
+| 5 Session | session hijacking |
+| 4 Transport | SYN flood, port scanning |
+| 3 Network | IP spoofing, ICMP flood |
+| 2 Data Link | ARP spoofing, MAC flooding |
+| 1 Physical | menyadap kabel, merusak perangkat, jamming Wi-Fi |
+
+<Quiz
+  id="osi-tujuh"
+  questions={[
+    {
+      q: "Router bekerja terutama di layer…",
+      options: ["Layer 1 Physical", "Layer 2 Data Link", "Layer 3 Network", "Layer 7 Application"],
+      answer: 2,
+    },
+    {
+      q: "Alamat MAC digunakan di layer…",
+      options: ["Layer 2", "Layer 3", "Layer 4", "Layer 7"],
+      answer: 0,
+    },
+    {
+      q: "Nama PDU di Layer 4 (TCP) adalah…",
+      options: ["Bit", "Frame", "Packet", "Segment"],
+      answer: 3,
+    },
+    {
+      q: "SQL Injection termasuk serangan di layer…",
+      options: ["Layer 2", "Layer 3", "Layer 4", "Layer 7"],
+      answer: 3,
+    },
+  ]}
+/>

@@ -1,0 +1,63 @@
+## Model TCP/IP
+
+Model yang **sebenarnya dipakai** di Internet hanya punya 4 layer. Berikut padanannya dengan OSI:
+
+| TCP/IP | OSI | Contoh protokol |
+|---|---|---|
+| **Application** | 7, 6, 5 | HTTP, DNS, SSH |
+| **Transport** | 4 | TCP, UDP |
+| **Internet** | 3 | IP, ICMP |
+| **Network Access** | 2, 1 | Ethernet, Wi-Fi, ARP |
+
+## Enkapsulasi: membungkus data
+
+Saat mengirim data, setiap layer **menambahkan header**-nya sendiri di depan data dari layer atasnya — seperti memasukkan surat ke amplop, lalu ke kardus, lalu ke truk. Proses ini disebut **enkapsulasi**.
+
+Di sisi penerima terjadi kebalikannya: setiap layer **membuka** header miliknya — disebut **de-enkapsulasi**.
+
+<EncapsulationDemo />
+
+## Apa yang berubah saat melewati router?
+
+Ini konsep yang **sangat penting** dan sering ditanyakan:
+
+- **Header IP (Layer 3)** → **tetap sama** dari pengirim sampai tujuan akhir (kecuali TTL yang berkurang 1). IP adalah alamat *ujung-ke-ujung*.
+- **Header Ethernet (Layer 2)** → **diganti di setiap hop**. Router membuka "amplop" Ethernet lama dan membuat amplop baru dengan MAC dirinya sebagai sumber dan MAC hop berikutnya sebagai tujuan. MAC adalah alamat *hop-ke-hop*.
+
+```text
+PC ──────▶ Router ──────▶ Server
+   MAC: PC→Router   MAC: Router→Server     ← berubah
+   IP:  PC→Server   IP:  PC→Server         ← tetap
+   TTL: 64          TTL: 63                ← berkurang 1
+```
+
+<Callout type="tip" title="Buktikan sendiri di lab">
+Di lab berikut, klik paket ICMP **sebelum** router (PC → Switch) lalu paket yang sama **sesudah** router (Router → Server). Bandingkan MAC dan IP-nya di inspektor paket!
+</Callout>
+
+## `traceroute`: melihat jalur paket
+
+`traceroute` memanfaatkan TTL untuk mengungkap setiap router di jalur menuju tujuan. Ia mengirim paket dengan TTL=1, lalu TTL=2, dan seterusnya. Setiap router yang membuat TTL habis akan membalas dengan pesan ICMP **Time Exceeded** — dan dari situ kita tahu alamatnya.
+
+<LabCTA labId="enkapsulasi" />
+
+<Quiz
+  id="osi-enkapsulasi"
+  questions={[
+    {
+      q: "Saat paket melewati router, bagian mana yang berubah?",
+      options: ["IP sumber dan tujuan", "MAC sumber dan tujuan (dan TTL berkurang)", "Isi data aplikasi", "Tidak ada yang berubah"],
+      answer: 1,
+    },
+    {
+      q: "Proses menambahkan header di setiap layer saat mengirim disebut…",
+      options: ["Routing", "Enkapsulasi", "Switching", "Enkripsi"],
+      answer: 1,
+    },
+    {
+      q: "Layer 'Internet' pada model TCP/IP setara dengan OSI layer…",
+      options: ["2", "3", "4", "7"],
+      answer: 1,
+    },
+  ]}
+/>

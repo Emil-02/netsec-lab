@@ -1,0 +1,36 @@
+Sekarang kita buktikan sendiri perbedaan **hub** dan **switch** yang sudah kamu pelajari.
+
+## Apa yang akan kamu lihat
+
+Di lab ini ada dua jaringan terpisah:
+
+- **Jaringan A** memakai **hub**: PC-A1, PC-A2, PC-A3
+- **Jaringan B** memakai **switch**: PC-B1, PC-B2, PC-B3
+
+Kamu akan mengirim `ping` dari PC pertama ke PC ketiga di masing-masing jaringan, lalu mengamati **siapa saja yang ikut menerima paket**.
+
+## Prediksi dulu! 🤔
+
+Sebelum mulai, coba tebak:
+
+1. Saat PC-A1 ping PC-A3, apakah PC-A2 ikut menerima paket ICMP?
+2. Saat PC-B1 ping PC-B3, apakah PC-B2 ikut menerima paket ICMP?
+3. Bagaimana dengan paket ARP (kuning)? Kenapa?
+
+<Callout type="tip" title="Cara membaca peta">
+Paket yang **diterima lalu dibuang** oleh sebuah NIC (karena MAC tujuannya bukan miliknya) ditampilkan **transparan dengan tanda ✕**. Di daftar paket, baris tersebut ditandai *(diabaikan)*.
+</Callout>
+
+## Hal yang perlu diperhatikan
+
+- **ARP request** selalu dikirim ke alamat broadcast `ff:ff:ff:ff:ff:ff`, sehingga **switch pun meneruskannya ke semua port**. Ini normal.
+- Untuk paket **unicast** (ICMP), hub tetap menyebarkan ke semua port, sedangkan switch hanya mengirim ke port tujuan — karena ia sudah **belajar** dari frame sebelumnya.
+- Setelah ping, klik ikon switch untuk melihat isi **MAC address table**-nya.
+
+<LabCTA labId="hub-vs-switch" />
+
+## Kesimpulan
+
+<Callout type="danger" title="Implikasi keamanan">
+Pada jaringan dengan hub, siapa pun yang terhubung dapat **menyadap (sniffing)** lalu lintas orang lain hanya dengan mendengarkan. Pada switch, penyerang harus melakukan trik tambahan seperti **ARP spoofing** atau **MAC flooding** — teknik yang akan kamu pelajari di modul *Sniffing & MITM*.
+</Callout>

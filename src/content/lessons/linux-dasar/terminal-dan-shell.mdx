@@ -1,0 +1,78 @@
+Hampir semua server di internet dan hampir semua tools keamanan siber berjalan di **Linux**. Dan cara utama berinteraksi dengan Linux adalah lewat **terminal**. Jadi, menguasai command line adalah keterampilan wajib.
+
+## Istilah penting
+
+- **Terminal** — jendela tempat kamu mengetik perintah teks
+- **Shell** — program yang membaca perintahmu dan menjalankannya. Yang paling populer adalah **Bash**
+- **Command line / CLI** — cara berinteraksi dengan komputer lewat teks, bukan klik-klik (GUI)
+
+## Kenapa pakai CLI kalau ada GUI?
+
+1. **Server tidak punya layar.** Kamu mengendalikannya dari jauh lewat SSH — hanya ada terminal.
+2. **Lebih cepat & bisa diotomatisasi.** Satu baris perintah bisa memproses ribuan file.
+3. **Tools keamanan** seperti `nmap`, `tcpdump`, dan `hydra` sebagian besar berbasis CLI.
+
+## Membaca prompt
+
+Saat terminal siap menerima perintah, ia menampilkan **prompt**:
+
+```text
+siswa@netsec:~$
+```
+
+| Bagian | Arti |
+|---|---|
+| `siswa` | nama user yang sedang login |
+| `netsec` | nama komputer (hostname) |
+| `~` | direktori saat ini (`~` = folder home) |
+| `$` | kamu user biasa. Jika `#`, kamu adalah **root** (admin) |
+
+## Struktur sebuah perintah
+
+```bash
+ls -l /home
+```
+
+- `ls` → **perintah** (command)
+- `-l` → **opsi/flag**, mengubah perilaku perintah (biasanya diawali `-`)
+- `/home` → **argumen**, target yang dikenai perintah
+
+<Callout type="tip" title="Bingung? Tanya manual!">
+Ketik `man <perintah>` (contoh: `man ls`) untuk membaca manual singkat, atau `help` untuk melihat semua perintah yang tersedia di lab.
+</Callout>
+
+## Perintah dasar pertama
+
+```bash
+whoami     # siapa saya?
+hostname   # nama komputer ini
+uname -a   # info sistem operasi
+date       # tanggal & jam
+clear      # bersihkan layar
+```
+
+<Callout type="info">
+Teks setelah `#` dalam contoh di atas adalah **komentar** — penjelasan untukmu, tidak perlu diketik.
+</Callout>
+
+<Quiz
+  id="linux-terminal"
+  questions={[
+    {
+      q: "Pada prompt `root@server:/var/log#`, apa arti simbol `#`?",
+      options: ["Sedang error", "User adalah root (admin)", "Folder kosong", "Terminal sedang sibuk"],
+      answer: 1,
+      explanation: "`#` menandakan kamu login sebagai root, user dengan kekuasaan penuh. Hati-hati!",
+    },
+    {
+      q: "Pada perintah `ping -c 4 google.com`, bagian `-c 4` disebut…",
+      options: ["Argumen", "Opsi/flag", "Shell", "Prompt"],
+      answer: 1,
+    },
+    {
+      q: "Program yang membaca dan menjalankan perintah yang kamu ketik disebut…",
+      options: ["Shell", "Kernel", "Browser", "Driver"],
+      answer: 0,
+    },
+  ]}
+/>

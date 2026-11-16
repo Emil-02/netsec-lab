@@ -1,0 +1,70 @@
+Jaringan komputer ada di mana-mana: di rumahmu (Wi-Fi), di sekolah, di kantor, sampai jaringan raksasa bernama **Internet**.
+
+## Host
+
+Setiap perangkat yang terhubung ke jaringan dan bisa mengirim/menerima data disebut **host** (atau *node*). Laptop, HP, smart TV, printer, dan server — semuanya host.
+
+## Client dan server
+
+Sebagian besar komunikasi di jaringan mengikuti model **client–server**:
+
+- **Client** — pihak yang **meminta** layanan. Contoh: browser di laptopmu.
+- **Server** — pihak yang **menyediakan** layanan. Contoh: komputer yang menyimpan website.
+
+```text
+  [Browser / Client]  ── "Minta halaman beranda" ──▶  [Web Server]
+  [Browser / Client]  ◀── "Ini halamannya"      ──   [Web Server]
+```
+
+Selain itu ada juga model **peer-to-peer (P2P)**, di mana setiap perangkat bisa menjadi client sekaligus server (contoh: torrent).
+
+## Jenis jaringan berdasarkan luasnya
+
+| Jenis | Kepanjangan | Cakupan | Contoh |
+|---|---|---|---|
+| **PAN** | Personal Area Network | beberapa meter | HP ↔ earbuds Bluetooth |
+| **LAN** | Local Area Network | satu gedung/rumah | Wi-Fi rumah, lab komputer sekolah |
+| **MAN** | Metropolitan Area Network | satu kota | jaringan kampus antar gedung |
+| **WAN** | Wide Area Network | antar kota/negara | jaringan kantor cabang, **Internet** |
+
+<Callout type="info" title="Internet = jaringan dari jaringan">
+Internet bukan satu jaringan raksasa, melainkan **jutaan jaringan** (LAN rumah, jaringan kampus, ISP, data center) yang saling terhubung menggunakan protokol yang sama: **TCP/IP**.
+</Callout>
+
+## Protokol: bahasa bersama
+
+Agar dua perangkat bisa berkomunikasi, keduanya harus "berbicara bahasa yang sama". Aturan komunikasi ini disebut **protokol**. Beberapa contoh yang akan kamu pelajari:
+
+- **IP** — aturan pengalamatan dan pengiriman paket
+- **TCP / UDP** — aturan pengiriman data antar aplikasi
+- **HTTP** — aturan meminta halaman web
+- **DNS** — aturan menerjemahkan nama domain menjadi alamat IP
+
+## Media transmisi
+
+Data bisa mengalir lewat:
+
+- **Kabel tembaga (UTP)** — kabel LAN biasa, konektor RJ-45
+- **Fiber optik** — sinyal cahaya, sangat cepat dan jauh
+- **Nirkabel** — Wi-Fi, Bluetooth, seluler (4G/5G)
+
+<Quiz
+  id="jaringan-dasar"
+  questions={[
+    {
+      q: "Browser yang meminta halaman web berperan sebagai…",
+      options: ["Server", "Client", "Router", "Switch"],
+      answer: 1,
+    },
+    {
+      q: "Jaringan Wi-Fi di rumahmu termasuk jenis…",
+      options: ["PAN", "LAN", "MAN", "WAN"],
+      answer: 1,
+    },
+    {
+      q: "Apa itu protokol?",
+      options: ["Kabel jaringan", "Aturan/bahasa komunikasi antar perangkat", "Nama lain dari server", "Aplikasi antivirus"],
+      answer: 1,
+    },
+  ]}
+/>

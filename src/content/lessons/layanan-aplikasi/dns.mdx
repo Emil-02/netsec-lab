@@ -1,0 +1,88 @@
+Manusia lebih mudah mengingat `netseclab.id` daripada `203.0.113.80`. **DNS (Domain Name System)** adalah "buku telepon Internet" yang menerjemahkan **nama domain** menjadi **alamat IP**.
+
+## Perjalanan sebuah query DNS
+
+Saat kamu mengetik `www.netseclab.id` di browser:
+
+<SequenceDiagram
+  title="Resolusi DNS"
+  actors={["Laptop", "DNS Resolver", "Root (.)", "TLD (.id)", "Authoritative"]}
+  steps={[
+    { from: 0, to: 1, label: "www.netseclab.id?", color: "#60a5fa", detail: "Laptop bertanya ke DNS resolver yang tertulis di /etc/resolv.conf (biasanya router atau DNS ISP). Laptop cek dulu /etc/hosts dan cache-nya." },
+    { from: 1, to: 2, label: "www.netseclab.id?", color: "#60a5fa", detail: "Jika resolver belum tahu, ia bertanya ke root server: 'Siapa yang mengurus .id?'" },
+    { from: 2, to: 1, label: "tanya server .id", color: "#94a3b8", detail: "Root server tidak tahu jawabannya, tapi tahu siapa pengelola domain .id." },
+    { from: 1, to: 3, label: "www.netseclab.id?", color: "#60a5fa", detail: "Resolver bertanya ke server TLD .id." },
+    { from: 3, to: 1, label: "tanya ns1.netseclab.id", color: "#94a3b8", detail: "Server .id menunjuk ke nameserver resmi (authoritative) milik netseclab.id." },
+    { from: 1, to: 4, label: "www.netseclab.id?", color: "#60a5fa", detail: "Resolver bertanya ke authoritative server." },
+    { from: 4, to: 1, label: "A 203.0.113.80", color: "#34d399", detail: "Authoritative server memberi jawaban pasti. Resolver menyimpannya di cache sesuai TTL." },
+    { from: 1, to: 0, label: "A 203.0.113.80", color: "#34d399", detail: "Laptop mendapat alamat IP, lalu browser bisa membuka koneksi TCP ke 203.0.113.80:443." },
+  ]}
+/>
+
+Semua pertanyaan ini biasanya memakai **UDP port 53** dan selesai dalam beberapa milidetik.
+
+## Jenis record DNS
+
+| Record | Fungsi | Contoh |
+|---|---|---|
+| **A** | nama → IPv4 | `web.kantor.lab → 10.0.0.80` |
+| **AAAA** | nama → IPv6 | `→ 2001:db8::80` |
+| **CNAME** | alias ke nama lain | `intranet.kantor.lab → web.kantor.lab` |
+| **MX** | server email domain | `kantor.lab → mail.kantor.lab` |
+| **TXT** | teks bebas (SPF, verifikasi) | `"v=spf1 mx -all"` |
+| **NS** | nameserver pengelola domain | `→ ns1.kantor.lab` |
+
+## Konfigurasi DNS di Linux
+
+```bash
+$ cat /etc/resolv.conf
+nameserver 10.0.0.53
+
+$ cat /etc/hosts
+127.0.0.1   localhost
+10.0.0.80   web.lokal
+```
+
+Urutan pencarian: **/etc/hosts dulu**, baru **DNS server**.
+
+## Alat-alat DNS
+
+```bash
+nslookup web.kantor.lab              # sederhana
+nslookup web.kantor.lab 10.0.0.53    # tanya ke server tertentu
+dig netseclab.id                     # detail lengkap
+dig kantor.lab MX                    # record tipe tertentu
+dig +short netseclab.id              # jawaban saja
+host netseclab.id                    # ringkas
+```
+
+## Troubleshooting: "internetnya mati!"
+
+Jika `ping 10.0.0.80` berhasil tapi `ping web.kantor.lab` gagal dengan *Temporary failure in name resolution*, jaringan sebenarnya baik-baik saja — **masalahnya di DNS**. Periksa `/etc/resolv.conf` dan coba tanya DNS server secara langsung.
+
+<Callout type="danger" title="DNS dan keamanan">
+DNS klasik **tidak terenkripsi dan tidak diautentikasi**. Penyerang bisa menyadap nama situs yang kamu kunjungi, atau melakukan **DNS spoofing**: memberikan jawaban palsu agar kamu diarahkan ke situs phishing. Mengubah `/etc/hosts` juga trik favorit malware. Pertahanan modern: **DNSSEC**, **DNS over HTTPS (DoH)**, dan **DNS over TLS (DoT)**.
+</Callout>
+
+<LabCTA labId="dns" />
+
+<Quiz
+  id="app-dns"
+  questions={[
+    {
+      q: "Record DNS yang memetakan nama ke alamat IPv4 adalah…",
+      options: ["MX", "CNAME", "A", "TXT"],
+      answer: 2,
+    },
+    {
+      q: "Ping ke IP berhasil, tapi ping ke nama domain gagal. Masalahnya kemungkinan besar di…",
+      options: ["Kabel", "Switch", "DNS", "Port 80"],
+      answer: 2,
+    },
+    {
+      q: "File yang berisi alamat DNS server di Linux adalah…",
+      options: ["/etc/hosts", "/etc/resolv.conf", "/etc/passwd", "/var/log/auth.log"],
+      answer: 1,
+    },
+  ]}
+/>

@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: #070b14;
+  --color-surface: #0d1424;
+  --color-surface-2: #121b2f;
+  --color-border: #1f2a40;
+  --color-muted: #8b98b3;
+  --color-accent: #34d399;
+  --color-accent-2: #22d3ee;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-background);
+  color: #e2e8f0;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(52 211 153 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(52 211 153 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* React Flow dark tweaks */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-controls-button-background-color: var(--color-surface-2);
+}
+.react-flow__attribution {
+  background: transparent;
+  opacity: 0.4;
+}
+.react-flow__controls-button {
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-border);
+  fill: #cbd5e1;
+}
+.react-flow__controls-button:hover {
+  background: var(--color-border);
+}
+
+/* xterm */
+.xterm .xterm-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: #1f2a40 transparent;
+}
+
+.prose pre {
+  background: #050810;
+  border: 1px solid var(--color-border);
+}
+.prose :where(code):not(:where(pre *))::before,
+.prose :where(code):not(:where(pre *))::after {
+  content: none;
+}
+.prose :where(code):not(:where(pre *)) {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  font-weight: 500;
+  color: var(--color-accent);
+}

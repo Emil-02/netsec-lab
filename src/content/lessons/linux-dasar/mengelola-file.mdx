@@ -1,0 +1,77 @@
+Setelah bisa bernavigasi, saatnya **membuat, menyalin, memindah, dan menghapus** file.
+
+## Membuat direktori dan file
+
+```bash
+mkdir latihan            # buat direktori baru
+mkdir -p a/b/c           # buat direktori bertingkat sekaligus
+touch catatan.txt        # buat file kosong
+```
+
+## Menulis teks ke file: `echo` dan redirect
+
+`echo` mencetak teks ke layar. Dengan simbol **redirect** `>` dan `>>`, outputnya bisa dialihkan ke file:
+
+```bash
+echo "halo dunia"                  # tampil di layar
+echo "baris pertama" > file.txt    # TULIS ke file (menimpa isi lama!)
+echo "baris kedua" >> file.txt     # TAMBAHKAN di akhir file
+cat file.txt
+```
+
+<Callout type="warning" title="> menimpa, >> menambah">
+`>` akan **menghapus isi lama** file sebelum menulis. Gunakan `>>` jika ingin menambahkan.
+</Callout>
+
+## Menyalin, memindah, mengganti nama
+
+```bash
+cp asal.txt salinan.txt          # copy
+cp laporan.txt arsip/            # copy ke dalam direktori
+mv lama.txt baru.txt             # ganti nama (rename)
+mv laporan.txt arsip/            # pindahkan ke direktori
+```
+
+Di Linux, **mengganti nama = memindahkan** ke nama baru. Keduanya memakai `mv`.
+
+## Menghapus
+
+```bash
+rm file.txt          # hapus file
+rm -r folder         # hapus direktori beserta isinya
+```
+
+<Callout type="danger" title="Tidak ada Recycle Bin!">
+File yang dihapus dengan `rm` **langsung hilang**. Perintah seperti `rm -rf /` bisa menghancurkan seluruh sistem. Selalu baca ulang perintahmu sebelum menekan Enter.
+</Callout>
+
+## Ringkasan
+
+| Perintah | Fungsi |
+|---|---|
+| `mkdir` | membuat direktori |
+| `touch` | membuat file kosong |
+| `echo ... >` | menulis teks ke file |
+| `cat` | membaca file |
+| `cp` | menyalin |
+| `mv` | memindah / mengganti nama |
+| `rm` | menghapus |
+
+<LabCTA labId="linux-file" />
+
+<Quiz
+  id="linux-file"
+  questions={[
+    {
+      q: "Isi file.txt adalah 'A'. Setelah `echo B > file.txt`, isinya menjadi…",
+      options: ["A", "B", "A lalu B", "Kosong"],
+      answer: 1,
+      explanation: "`>` menimpa isi file. Untuk menambah gunakan `>>`.",
+    },
+    {
+      q: "Perintah untuk mengganti nama `foto.jpg` menjadi `profil.jpg`?",
+      options: ["cp foto.jpg profil.jpg", "rename foto.jpg", "mv foto.jpg profil.jpg", "rm foto.jpg profil.jpg"],
+      answer: 2,
+    },
+  ]}
+/>

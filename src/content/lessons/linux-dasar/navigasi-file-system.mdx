@@ -1,0 +1,96 @@
+Di Linux, **semua** file dan folder tersusun dalam satu pohon besar yang dimulai dari **root directory** `/`.
+
+```text
+/
+├── bin/        program-program dasar
+├── etc/        file konfigurasi sistem
+├── home/       folder pribadi para user
+│   └── siswa/  ← folder home kamu (~)
+├── root/       folder home milik user root
+├── tmp/        file sementara
+└── var/
+    └── log/    file log (catatan aktivitas sistem)
+```
+
+<Callout type="info" title="Folder = direktori">
+Di Linux, "folder" biasanya disebut **direktori** (directory). Keduanya sama saja.
+</Callout>
+
+## Tiga perintah navigasi utama
+
+### `pwd` — di mana saya?
+**P**rint **W**orking **D**irectory: menampilkan lokasimu sekarang.
+
+```bash
+$ pwd
+/home/siswa
+```
+
+### `ls` — ada apa di sini?
+**L**i**s**t: menampilkan isi direktori.
+
+```bash
+ls          # isi direktori saat ini
+ls dokumen  # isi direktori 'dokumen'
+ls -l       # format panjang: izin, pemilik, ukuran, tanggal
+ls -a       # tampilkan juga file TERSEMBUNYI
+ls -la      # gabungan keduanya
+```
+
+<Callout type="warning" title="File tersembunyi">
+File atau folder yang namanya diawali titik (contoh: `.bashrc`) **tidak tampil** dengan `ls` biasa. Penyerang (dan admin!) sering menyimpan sesuatu di file tersembunyi — selalu cek dengan `ls -a`.
+</Callout>
+
+### `cd` — pindah ke direktori lain
+**C**hange **D**irectory.
+
+```bash
+cd dokumen        # masuk ke folder dokumen
+cd ..             # naik satu tingkat (ke folder induk)
+cd ~   atau  cd   # kembali ke home
+cd /var/log       # lompat ke path absolut
+```
+
+## Path absolut vs relatif
+
+- **Absolut** — dimulai dari `/`, berlaku dari mana saja. Contoh: `/home/siswa/dokumen`
+- **Relatif** — dihitung dari posisimu sekarang. Contoh: `dokumen/rahasia`
+
+| Simbol | Arti |
+|---|---|
+| `.` | direktori saat ini |
+| `..` | direktori induk (satu tingkat di atas) |
+| `~` | direktori home |
+| `/` | root, puncak pohon |
+
+## Membaca file: `cat`
+
+```bash
+cat catatan.txt
+```
+
+Menampilkan seluruh isi file ke layar.
+
+<LabCTA labId="linux-navigasi" />
+
+<Quiz
+  id="linux-navigasi"
+  questions={[
+    {
+      q: "Kamu berada di /home/siswa/dokumen. Ke mana kamu pergi setelah `cd ..`?",
+      options: ["/", "/home", "/home/siswa", "/home/siswa/dokumen/.."],
+      answer: 2,
+    },
+    {
+      q: "Perintah apa untuk melihat file tersembunyi?",
+      options: ["ls -h", "ls -a", "cat -a", "pwd -a"],
+      answer: 1,
+    },
+    {
+      q: "Manakah yang merupakan path absolut?",
+      options: ["dokumen/catatan.txt", "../etc", "/etc/hosts", "./skrip.sh"],
+      answer: 2,
+      explanation: "Path absolut selalu diawali `/`.",
+    },
+  ]}
+/>

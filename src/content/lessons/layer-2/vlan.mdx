@@ -1,0 +1,66 @@
+Bayangkan sebuah kantor dengan divisi Keuangan, HRD, dan Staf Umum yang semuanya tercolok ke switch yang sama. Secara default, mereka semua berada di **satu jaringan Layer 2**: broadcast dari satu PC sampai ke semua PC, dan siapa pun bisa menjangkau komputer HRD yang menyimpan data gaji.
+
+Membeli switch terpisah untuk setiap divisi itu mahal. Solusinya: **VLAN (Virtual LAN)**.
+
+## Apa itu VLAN?
+
+VLAN membagi **satu switch fisik** menjadi **beberapa switch virtual**. Port yang berada di VLAN berbeda tidak bisa saling berkomunikasi di Layer 2 — seolah-olah dicolok ke switch yang berbeda.
+
+```text
+          Switch fisik
+ ┌──────────────────────────────┐
+ │ VLAN 10 (Staf) : p1 p2 p3     │  ← satu broadcast domain
+ │ VLAN 20 (HRD)  : p4 p5        │  ← broadcast domain lain
+ └──────────────────────────────┘
+```
+
+Manfaat VLAN:
+
+- 🔒 **Keamanan** — memisahkan kelompok pengguna (staf vs HRD vs tamu Wi-Fi vs kamera CCTV)
+- 📉 **Mengurangi broadcast** — ARP dari VLAN 10 tidak membanjiri VLAN 20
+- 🧩 **Fleksibel** — memindah PC ke divisi lain cukup dengan mengubah konfigurasi port, tanpa memindah kabel
+
+## Access port vs trunk port
+
+| Jenis port | Fungsi | Contoh |
+|---|---|---|
+| **Access** | milik **satu** VLAN; untuk PC, printer, dll. | `p3` di VLAN 20 |
+| **Trunk** | membawa **banyak** VLAN sekaligus; untuk link antar switch | `p8` menuju switch lain |
+
+Agar switch di seberang tahu sebuah frame milik VLAN mana, switch menempelkan **tag 802.1Q** (berisi nomor VLAN) saat frame melewati trunk, lalu melepasnya lagi sebelum dikirim ke PC.
+
+```text
+HRD-1 ──(tanpa tag)──▶ Switch-1 ══[VLAN 20 | frame]══▶ Switch-2 ──(tanpa tag)──▶ HRD-2
+                                 link trunk
+```
+
+## Lalu bagaimana jika VLAN berbeda perlu berkomunikasi?
+
+Lalu lintas antar VLAN harus melewati perangkat **Layer 3** (router atau *Layer 3 switch*) — teknik ini disebut **inter-VLAN routing**. Keuntungannya: di titik itu kita bisa memasang **firewall** untuk mengatur siapa boleh bicara dengan siapa.
+
+<Callout type="warning" title="VLAN bukan pengaman sempurna">
+Konfigurasi trunk yang ceroboh dapat dimanfaatkan dengan serangan **VLAN hopping** (misalnya *double tagging*). Praktik baiknya: jangan pakai VLAN 1 untuk pengguna, matikan port yang tidak dipakai, dan jadikan trunk hanya port yang memang menuju switch lain.
+</Callout>
+
+<LabCTA labId="vlan" />
+
+<Quiz
+  id="l2-vlan"
+  questions={[
+    {
+      q: "Dua PC dengan subnet sama tapi berada di VLAN berbeda (switch yang sama). Apakah mereka bisa saling ping?",
+      options: ["Bisa, karena subnetnya sama", "Tidak bisa tanpa router/inter-VLAN routing", "Bisa jika pakai kabel lebih panjang", "Hanya bisa lewat Wi-Fi"],
+      answer: 1,
+    },
+    {
+      q: "Port yang membawa banyak VLAN antar switch disebut…",
+      options: ["Access port", "Trunk port", "Console port", "Mirror port"],
+      answer: 1,
+    },
+    {
+      q: "Fungsi tag 802.1Q adalah…",
+      options: ["Mengenkripsi frame", "Menandai frame milik VLAN mana saat melewati trunk", "Mempercepat frame", "Mengganti alamat MAC"],
+      answer: 1,
+    },
+  ]}
+/>

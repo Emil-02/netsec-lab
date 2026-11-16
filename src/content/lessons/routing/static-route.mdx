@@ -1,0 +1,73 @@
+Router hanya tahu jaringan yang **terhubung langsung** dengannya. Untuk jaringan yang lebih jauh, kita harus memberitahunya jalan — salah satunya dengan **static route**.
+
+## Skenario
+
+```text
+ PC-A ────── R1 ══════════ R2 ────── PC-B
+192.168.1.10  .1  10.0.0.1/30  10.0.0.2  .1  192.168.2.10
+   Kantor A          link antar router          Kantor B
+```
+
+- R1 kenal: `192.168.1.0/24` dan `10.0.0.0/30`
+- R2 kenal: `10.0.0.0/30` dan `192.168.2.0/24`
+- R1 **tidak tahu** di mana `192.168.2.0/24`, dan R2 **tidak tahu** di mana `192.168.1.0/24`
+
+## Menambahkan static route
+
+Formatnya:
+
+```bash
+ip route add <jaringan-tujuan>/<prefix> via <IP-router-berikutnya>
+```
+
+Di R1:
+
+```bash
+ip route add 192.168.2.0/24 via 10.0.0.2
+```
+
+Artinya: *"Untuk mencapai 192.168.2.0/24, serahkan paket ke 10.0.0.2 (R2)."* Alamat **next hop** (`via`) harus berada di jaringan yang terhubung langsung dengan router — R1 bisa menjangkau 10.0.0.2 karena keduanya ada di 10.0.0.0/30.
+
+## Jebakan klasik: routing harus dua arah!
+
+Setelah R1 diberi rute, ping dari PC-A ke PC-B **masih gagal**. Kenapa?
+
+1. Echo Request dari PC-A → R1 → R2 → PC-B ✅ (R1 sekarang tahu jalannya)
+2. PC-B membalas Echo Reply ke 192.168.1.10 → R2... ❌ R2 tidak tahu jalan ke 192.168.1.0/24!
+
+Setiap paket punya perjalanan **pergi** dan **pulang**. Kita juga harus menambahkan rute di R2:
+
+```bash
+ip route add 192.168.1.0/24 via 10.0.0.1
+```
+
+<Callout type="tip" title="Gunakan traceroute untuk troubleshooting">
+`traceroute` menunjukkan sampai di router mana paket berhasil diteruskan. Jika muncul `!N` (*network unreachable*) di sebuah hop, berarti router itu tidak punya rute ke tujuan. Jika muncul `* * *`, paket mungkin sampai tapi balasannya tersesat di jalan pulang.
+</Callout>
+
+## Kenapa link antar router memakai /30?
+
+Link antara dua router hanya butuh **2 alamat IP**. Subnet `/30` punya tepat 2 host valid (4 alamat dikurangi network & broadcast), sehingga tidak memboroskan alamat.
+
+<LabCTA labId="static-route" />
+
+<Quiz
+  id="routing-static"
+  questions={[
+    {
+      q: "Pada `ip route add 172.16.0.0/16 via 10.0.0.2`, alamat 10.0.0.2 disebut…",
+      options: ["Jaringan tujuan", "Next hop / gateway", "Broadcast", "DNS server"],
+      answer: 1,
+    },
+    {
+      q: "Ping PC-A ke PC-B gagal walaupun R1 sudah punya rute ke jaringan PC-B. Penyebab paling mungkin?",
+      options: ["Kabel PC-A putus", "R2 tidak punya rute balik ke jaringan PC-A", "DNS salah", "Switch rusak"],
+      answer: 1,
+    },
+    {
+      q: "Berapa host valid pada subnet /30?",
+      options: ["1", "2", "4", "6"],
+      answer: 1,
+    },
+  ]}
+/>

@@ -1,0 +1,105 @@
+Setiap kali kamu membuka website, browser dan server bercakap-cakap memakai **HTTP (HyperText Transfer Protocol)**. Percakapannya ternyata hanya teks biasa yang bisa kamu baca!
+
+## Request dan response
+
+**Request** dari browser:
+
+```http
+GET /produk HTTP/1.1
+Host: toko.lab
+User-Agent: curl/8.5.0
+Accept: */*
+```
+
+**Response** dari server:
+
+```http
+HTTP/1.1 200 OK
+Server: nginx/1.24.0
+Content-Type: text/plain; charset=utf-8
+Content-Length: 87
+
+1. Kabel UTP Cat6 - Rp5.000/m
+2. Switch 8 port - Rp250.000
+```
+
+Baris pertama response berisi **status code**, lalu **header**, satu baris kosong, dan **body** (isi halaman).
+
+## Method HTTP
+
+| Method | Fungsi |
+|---|---|
+| **GET** | mengambil data/halaman |
+| **POST** | mengirim data (form login, upload) |
+| **PUT / PATCH** | mengubah data |
+| **DELETE** | menghapus data |
+| **HEAD** | seperti GET, tapi hanya header |
+
+## Status code
+
+| Kode | Arti | Contoh |
+|---|---|---|
+| **2xx** | berhasil | `200 OK` |
+| **3xx** | dialihkan | `301 Moved Permanently`, `302 Found` |
+| **4xx** | kesalahan dari client | `401 Unauthorized`, `403 Forbidden`, `404 Not Found` |
+| **5xx** | kesalahan di server | `500 Internal Server Error` |
+
+## curl: browser di terminal
+
+```bash
+curl http://toko.lab                    # ambil halaman
+curl -v http://toko.lab                 # tampilkan percakapan lengkap
+curl -I http://toko.lab                 # hanya header
+curl -L http://toko.lab/lama            # ikuti redirect
+curl -d "user=a&pass=b" http://toko.lab/login   # kirim POST
+```
+
+## HTTP vs HTTPS
+
+HTTP mengirim semuanya sebagai **teks biasa**: URL, cookie, bahkan **password** dari form login. Siapa pun yang bisa menyadap jaringan (Wi-Fi publik, hub, atau penyerang ARP spoofing) dapat membacanya.
+
+**HTTPS** = HTTP yang dibungkus **TLS**:
+
+1. Setelah TCP handshake, client dan server melakukan **TLS handshake**: server menunjukkan **sertifikat** (bukti identitas), lalu keduanya menyepakati **kunci sesi**.
+2. Semua data HTTP kemudian **dienkripsi** — penyadap hanya melihat data acak.
+
+```text
+HTTP :  TCP handshake → "POST /login … pass=netsec123"         ← terbaca!
+HTTPS:  TCP handshake → TLS handshake → "a3 9f 1c 77 e2 …"     ← terenkripsi
+```
+
+<Callout type="warning" title="robots.txt bukan pengaman">
+`robots.txt` hanya meminta mesin pencari agar tidak mengindeks halaman tertentu. Tapi file itu bisa dibaca **siapa saja** — dan sering justru membocorkan lokasi halaman sensitif! Penyerang selalu mengeceknya saat melakukan *reconnaissance*.
+</Callout>
+
+<Callout type="info" title="Selanjutnya: keamanan web">
+HTTP adalah fondasi dari **Web Security** (Modul 14). Serangan seperti **SQL Injection** dan **XSS** dikirim lewat parameter request HTTP yang sama seperti yang kamu kirim dengan `curl -d`.
+</Callout>
+
+<LabCTA labId="http" />
+
+<Quiz
+  id="app-http"
+  questions={[
+    {
+      q: "Status code 404 berarti…",
+      options: ["Berhasil", "Halaman tidak ditemukan", "Server error", "Dialihkan"],
+      answer: 1,
+    },
+    {
+      q: "Method yang biasa dipakai untuk mengirim form login adalah…",
+      options: ["GET", "POST", "HEAD", "DELETE"],
+      answer: 1,
+    },
+    {
+      q: "Apa yang dilihat penyadap saat kamu login lewat HTTPS?",
+      options: ["Username dan password", "Data terenkripsi yang tidak bisa dibaca", "Tidak ada paket sama sekali", "Hanya password"],
+      answer: 1,
+    },
+    {
+      q: "Pernyataan yang benar tentang robots.txt…",
+      options: ["Melindungi halaman rahasia", "Hanya bisa dibaca admin", "Bisa dibaca siapa saja dan tidak mengamankan apa pun", "Mengenkripsi website"],
+      answer: 2,
+    },
+  ]}
+/>

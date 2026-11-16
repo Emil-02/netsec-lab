@@ -1,0 +1,88 @@
+Firewall mencegah, tapi tidak ada pertahanan yang sempurna. Karena itu organisasi juga harus bisa **mendeteksi** serangan dan **merespons** dengan cepat. Fondasinya adalah **log**.
+
+## Log penting di Linux
+
+| File | Isi |
+|---|---|
+| `/var/log/auth.log` | login, sudo, SSH (berhasil & gagal) |
+| `/var/log/syslog` | pesan sistem umum |
+| `/var/log/kern.log` | pesan kernel, termasuk aturan `iptables -j LOG` |
+| `/var/log/nginx/access.log` | setiap request ke web server |
+
+Kamu sudah punya alat untuk membacanya sejak Modul 1:
+
+```bash
+grep "Failed password" /var/log/auth.log | wc -l     # berapa banyak?
+grep "Failed password" /var/log/auth.log | tail      # yang terbaru
+grep 203.0.113.66 /var/log/auth.log                  # aktivitas IP tertentu
+```
+
+## IDS & IPS
+
+- **IDS (Intrusion Detection System)** — memantau lalu lintas/log dan **memberi peringatan** jika ada pola mencurigakan (port scan, brute force, signature malware). Contoh: Snort, Suricata, Zeek.
+- **IPS (Intrusion Prevention System)** — seperti IDS, tapi juga **memblokir** secara otomatis.
+- **SIEM** — mengumpulkan log dari banyak sistem ke satu tempat untuk dianalisis (contoh: Wazuh, Elastic, Splunk).
+
+Pola yang biasa dideteksi:
+
+| Pola | Kemungkinan |
+|---|---|
+| SYN ke puluhan port berbeda dari satu IP dalam beberapa detik | port scan |
+| Puluhan `Failed password` dari satu IP, username bervariasi | brute force |
+| Login berhasil pukul 03.00 dari negara lain | akun dibobol |
+| ARP reply tak diminta, MAC gateway berubah | ARP spoofing |
+
+## fail2ban: respons otomatis
+
+**fail2ban** membaca log dan memblokir IP yang gagal login berkali-kali dengan menambahkan aturan firewall secara otomatis — persis yang akan kamu lakukan secara manual di lab:
+
+```text
+1. baca auth.log → 5 kali gagal dari 203.0.113.66 dalam 10 menit
+2. iptables -I INPUT -s 203.0.113.66 -j REJECT
+3. hapus blokir setelah 1 jam (bantime)
+```
+
+## Siklus respons insiden
+
+<SequenceDiagram
+  title="Respons insiden (ringkas)"
+  actors={["Deteksi", "Analisis", "Penahanan", "Pemulihan"]}
+  steps={[
+    { from: 0, to: 1, label: "peringatan muncul", color: "#facc15", detail: "Monitoring, IDS, atau pengguna melaporkan sesuatu yang aneh (CPU tinggi, login gagal beruntun)." },
+    { from: 1, to: 2, label: "pastikan & ukur", color: "#60a5fa", detail: "Baca log: apa yang terjadi, sejak kapan, dari mana, sistem apa yang terdampak? Simpan bukti sebelum mengubah apa pun." },
+    { from: 2, to: 3, label: "hentikan penyebaran", color: "#f87171", detail: "Blokir IP penyerang, isolasi mesin yang terinfeksi, nonaktifkan akun yang dibobol." },
+    { from: 3, to: 0, label: "perbaiki & belajar", color: "#34d399", detail: "Tambal celah, ganti password, pulihkan dari backup, lalu tingkatkan deteksi agar insiden serupa ketahuan lebih cepat (lessons learned)." },
+  ]}
+/>
+
+<Callout type="tip" title="Catat, jangan hanya blokir">
+Saat memblokir, pasang juga aturan `LOG` **di atas** aturan DROP. Log ini menjadi bukti bahwa serangan masih berlangsung — dan bahwa blokiranmu bekerja.
+</Callout>
+
+<LabCTA labId="respons-insiden" />
+
+<Quiz
+  id="def-ids"
+  questions={[
+    {
+      q: "File log yang mencatat percobaan login SSH di Ubuntu adalah…",
+      options: ["/var/log/kern.log", "/var/log/auth.log", "/etc/passwd", "/var/log/nginx/access.log"],
+      answer: 1,
+    },
+    {
+      q: "Perbedaan IDS dan IPS adalah…",
+      options: ["IDS hanya memberi peringatan, IPS juga memblokir", "IDS lebih mahal", "IPS hanya untuk Windows", "Tidak ada bedanya"],
+      answer: 0,
+    },
+    {
+      q: "fail2ban bekerja dengan cara…",
+      options: ["Mengenkripsi password", "Membaca log lalu menambahkan aturan firewall untuk IP yang mencurigakan", "Mengganti port SSH", "Mematikan server"],
+      answer: 1,
+    },
+    {
+      q: "Kenapa aturan LOG harus diletakkan di atas aturan DROP?",
+      options: ["Agar lebih cepat", "Karena paket yang sudah di-DROP tidak diperiksa aturan berikutnya", "Karena LOG adalah policy", "Tidak ada alasan"],
+      answer: 1,
+    },
+  ]}
+/>

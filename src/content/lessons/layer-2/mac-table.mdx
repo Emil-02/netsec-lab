@@ -1,0 +1,62 @@
+Di Modul 2 kamu melihat bahwa switch lebih pintar dari hub. Sekarang kita bedah **bagaimana** switch menjadi pintar: lewat **MAC address table** (sering juga disebut *CAM table*).
+
+## Tiga keputusan switch
+
+Setiap kali sebuah frame masuk, switch melakukan:
+
+1. **Learning (belajar)** — catat *MAC sumber* frame dan *port* tempat frame masuk.
+2. **Forwarding (meneruskan)** — jika *MAC tujuan* sudah ada di tabel, kirim **hanya** ke port itu.
+3. **Flooding (membanjiri)** — jika MAC tujuan belum dikenal, atau tujuannya broadcast, kirim ke **semua port** kecuali port asal.
+
+```text
+Frame masuk di p1: src=AA:AA  dst=BB:BB
+  ├─ Learning  : catat "AA:AA ada di p1"
+  └─ BB:BB ada di tabel?
+       ├─ YA    → kirim ke port BB:BB saja
+       └─ TIDAK → flood ke semua port lain
+```
+
+## Contoh tabel
+
+```text
+Switch# show mac address-table
+          Mac Address Table
+-------------------------------------------
+Vlan  Mac Address         Type      Port
+1     02:42:ac:01:00:10   DYNAMIC   p1
+1     02:42:ac:02:00:17   DYNAMIC   p2
+Total Mac Addresses: 2
+```
+
+Entri bertipe **DYNAMIC** dipelajari otomatis dan akan dihapus jika lama tidak terlihat (*aging*, biasanya 300 detik).
+
+## Unknown unicast flooding
+
+Bagaimana jika tabel switch kosong (misalnya baru restart) tapi PC masih ingat MAC tujuan di tabel ARP-nya? PC langsung mengirim frame **unicast**, tapi switch tidak tahu port tujuannya — sehingga frame itu **dibanjiri ke semua port**. Perangkat lain menerimanya lalu membuangnya karena MAC tujuan bukan miliknya.
+
+<Callout type="danger" title="Serangan MAC flooding">
+Tabel MAC punya kapasitas terbatas. Penyerang bisa mengirim ribuan frame dengan MAC sumber palsu hingga tabel penuh. Akibatnya switch tidak bisa belajar lagi dan mulai **membanjiri semua frame** — berubah menjadi "hub" sehingga lalu lintas orang lain bisa disadap. Pertahanannya: fitur **port security** yang membatasi jumlah MAC per port.
+</Callout>
+
+<LabCTA labId="mac-table" />
+
+<Quiz
+  id="l2-mac"
+  questions={[
+    {
+      q: "Switch mempelajari MAC address dari bagian mana sebuah frame?",
+      options: ["MAC tujuan", "MAC sumber", "IP sumber", "Port TCP"],
+      answer: 1,
+    },
+    {
+      q: "Apa yang dilakukan switch jika MAC tujuan belum ada di tabelnya?",
+      options: ["Membuang frame", "Mengirim ke router", "Flood ke semua port kecuali port asal", "Mengirim ARP"],
+      answer: 2,
+    },
+    {
+      q: "Tujuan serangan MAC flooding adalah…",
+      options: ["Mempercepat jaringan", "Membuat switch berperilaku seperti hub agar bisa menyadap", "Mencuri password Wi-Fi", "Mengganti IP korban"],
+      answer: 1,
+    },
+  ]}
+/>
