@@ -4,7 +4,7 @@ import { CTF_FLAGS_FOR_TESTS } from "./ctf";
 import { labList } from "./index";
 
 /** Reference solutions: [deviceId, command][] plus UI facts the learner would trigger. */
-const solutions: Record<string, { steps: Step[]; uiFacts?: string[] }> = {
+export const solutions: Record<string, { steps: Step[]; uiFacts?: string[] }> = {
   "tur-lab": {
     steps: [["laptop", "help"], ["laptop", "whoami"], ["laptop", "ip a"], ["laptop", "ping teman"], ["laptop", "ping -c 1 printer"], ["laptop", "arp -a"]],
     uiFacts: ["ui:packet-inspected"],
