@@ -12,7 +12,7 @@ Normalnya, kartu jaringan **membuang** frame yang MAC tujuannya bukan miliknya (
 | **Switch** | hanya lalu lintas milik sendiri + broadcast (ARP, DHCP) |
 | **Wi-Fi terbuka** | semua lalu lintas di udara (tanpa enkripsi Wi-Fi) |
 
-Switch mempersulit sniffing, tapi tidak membuatnya mustahil — penyerang bisa memakai **ARP spoofing** atau **MAC flooding** untuk menarik lalu lintas ke dirinya (materi berikutnya).
+Switch mempersulit sniffing, tapi tidak membuatnya mustahil — penyerang bisa memakai **ARP spoofing** (materi berikutnya) atau **MAC flooding** (Modul 5) untuk menarik lalu lintas ke dirinya.
 
 ## tcpdump
 
@@ -30,10 +30,10 @@ Contoh output:
 
 ```text
 10:00:02.820000 IP 10.3.0.21.51235 > 10.3.0.80.80: Flags [S], seq 0, length 0
-10:00:05.720000 IP 10.3.0.21.51235 > 10.3.0.80.80: Flags [P.], length 174: HTTP: POST /login
+10:00:05.720000 IP 10.3.0.21.51235 > 10.3.0.80.80: Flags [P.], seq 1, ack 1, length 174: HTTP: POST /login HTTP/1.1
 ```
 
-`[S]` = SYN, `[S.]` = SYN-ACK, `[.]` = ACK, `[P.]` = PSH-ACK (data), `[F.]` = FIN, `[R]` = RST.
+`[S]` = SYN, `[S.]` = SYN-ACK, `[.]` = ACK, `[P.]` = PSH-ACK (data), `[F.]` = FIN-ACK, `[R]` = RST. Titik (`.`) selalu berarti flag ACK ikut menyala.
 
 ## Protokol yang berbahaya disadap
 

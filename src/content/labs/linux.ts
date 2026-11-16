@@ -72,7 +72,7 @@ export const linuxFile: LabDefinition = {
         return f?.type === "file" && f.content.toLowerCase().includes("halo");
       },
     },
-    { id: "cp", text: "Salin `halo.txt` menjadi `latihan/halo-backup.txt`", check: (ctx) => fileAt(ctx, "pc", "/home/siswa/latihan/halo-backup.txt")?.type === "file" },
+    { id: "cp", text: "Salin `latihan/halo.txt` menjadi `latihan/halo-backup.txt`", check: (ctx) => fileAt(ctx, "pc", "/home/siswa/latihan/halo-backup.txt")?.type === "file" },
     {
       id: "mv",
       text: "Pindahkan `laporan-lama.txt` ke folder `latihan` dengan nama `laporan-q1.txt`",

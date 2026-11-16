@@ -2,10 +2,14 @@ Setiap perangkat di jaringan punya **dua jenis alamat**: alamat **MAC** dan alam
 
 ## Alamat MAC (Layer 2)
 
-- Panjang **48 bit**, ditulis dalam heksadesimal: `02:42:ac:11:00:02`
+- Panjang **48 bit**, ditulis dalam heksadesimal: `3c:52:82:1a:2b:3c`
 - **Ditanam di NIC** oleh pabrik (walau bisa dipalsukan secara software)
 - Dipakai untuk komunikasi **di dalam satu jaringan lokal**
 - 3 byte pertama = kode vendor pembuat (OUI)
+
+<Callout type="info" title="MAC di lab">
+Perangkat di NetSec Lab memakai MAC berawalan `02:` — ini alamat *locally administered* (dibuat oleh software, seperti pada VM dan container), bukan dari pabrik, sehingga tidak punya kode vendor.
+</Callout>
 
 Analogi: **nomor KTP** — melekat pada orangnya, tidak berubah walau pindah rumah.
 
@@ -22,7 +26,7 @@ Analogi: **alamat rumah** — berubah saat kamu pindah.
 |---|---|---|
 | Layer | 2 (Data Link) | 3 (Network) |
 | Panjang | 48 bit | 32 bit (IPv4) |
-| Contoh | `02:42:ac:11:00:02` | `192.168.1.10` |
+| Contoh | `3c:52:82:1a:2b:3c` | `192.168.1.10` |
 | Cakupan | jaringan lokal | lintas jaringan |
 | Diatur oleh | pabrik NIC | admin / DHCP |
 

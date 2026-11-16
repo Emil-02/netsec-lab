@@ -40,7 +40,7 @@ Payload **disimpan** di server (komentar, profil, buku tamu) lalu ditampilkan ke
 
 ### 3. DOM-based XSS
 
-Celah ada di **JavaScript sisi client** yang memasukkan data (misalnya dari URL) ke halaman dengan `innerHTML`, tanpa melewati server.
+Celah ada di **JavaScript sisi client** yang memasukkan data (misalnya dari URL) ke halaman dengan `innerHTML`. Payload tidak pernah disisipkan server ke dalam HTML, sehingga sering lolos dari pemeriksaan di sisi server.
 
 ## Tidak hanya tag `<script>`
 
@@ -68,6 +68,8 @@ Ubah karakter khusus HTML menjadi entitas sebelum ditampilkan:
 | `&` | `&amp;` |
 
 Hasilnya, `<script>` tampil sebagai **teks biasa** di layar, bukan dieksekusi. Framework modern (React, Vue, template engine) melakukan ini **secara otomatis** — celah biasanya muncul saat developer menonaktifkannya (`dangerouslySetInnerHTML`, `v-html`, `|safe`).
+
+Escaping harus **sesuai konteks**: tabel di atas untuk isi HTML dan atribut. Untuk URL di `href`/`src`, escaping saja tidak cukup — `javascript:alert(1)` tidak mengandung karakter berbahaya sama sekali. Validasi bahwa URL diawali skema yang aman (`https://`, `http://`, atau path relatif).
 
 ### Lapisan tambahan
 

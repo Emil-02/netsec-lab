@@ -10,7 +10,7 @@ export const turLab: LabDefinition = {
   xp: 50,
   controllable: ["laptop"],
   briefing: [
-    "Selamat datang di lab pertamamu! Di sebelah kiri ada terminal: tempat kamu mengetik perintah ke laptop virtualmu. Di sebelah kanan ada peta jaringan yang menampilkan apa yang sebenarnya terjadi di kabel jaringan.",
+    "Selamat datang di lab pertamamu! Di bagian tengah ada terminal: tempat kamu mengetik perintah ke laptop virtualmu. Di sebelah kanan ada peta jaringan yang menampilkan apa yang sebenarnya terjadi di kabel jaringan.",
     "Semua yang ada di sini adalah simulasi — kamu tidak bisa merusak apa pun. Bereksperimenlah sebebasnya!",
   ],
   topology: {
@@ -37,6 +37,6 @@ export const turLab: LabDefinition = {
   hints: [
     "Ketik perintah lalu tekan Enter. Contoh: ketik help lalu Enter.",
     "Perhatikan animasi di peta: paket kuning (ARP) muncul lebih dulu sebelum paket biru (ICMP). Kenapa? Laptopmu harus tahu dulu alamat MAC teman!",
-    "Gunakan slider kecepatan di atas peta untuk memperlambat animasi.",
+    "Gunakan tombol kecepatan (0.25× – Instan) di bagian atas halaman untuk memperlambat animasi.",
   ],
 };

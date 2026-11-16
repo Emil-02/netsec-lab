@@ -1,4 +1,4 @@
-import { FsError, formatMode, type FsNode } from "../fs";
+import { canEnter, canRead, FsError, formatMode, type FsNode } from "../fs";
 import { ansi, hasFlag, positional, type CommandContext, type CommandDef } from "../types";
 
 function fsOf(ctx: CommandContext) {
@@ -62,6 +62,11 @@ export const fileCommands: CommandDef[] = [
           ctx.error(`ls: tidak dapat mengakses '${positional(ctx.args)[0]}': Tidak ada file atau direktori tersebut`);
           return 2;
         }
+        if (node.type === "dir" && !canRead(node, ctx.user, ctx.isRoot())) {
+          ctx.error(`ls: tidak dapat membuka direktori '${positional(ctx.args)[0] ?? "."}': Izin ditolak (Permission denied)`);
+          ctx.fact(`denied:${target}`);
+          return 2;
+        }
         ctx.fact("cmd:ls");
         if (all) ctx.fact("ls:all");
         if (long) ctx.fact("ls:long");
@@ -99,6 +104,11 @@ export const fileCommands: CommandDef[] = [
           ctx.error(`cd: ${arg}: Bukan direktori`);
           return 1;
         }
+        if (!canEnter(node, ctx.user, ctx.isRoot())) {
+          ctx.error(`cd: ${arg}: Izin ditolak (Permission denied)`);
+          ctx.fact(`denied:${target}`);
+          return 1;
+        }
         ctx.session.cwd = target;
         ctx.fact(`cd:${target}`);
       });
@@ -127,7 +137,7 @@ export const fileCommands: CommandDef[] = [
           } else if (node.type === "dir") {
             ctx.error(`cat: ${f}: Adalah sebuah direktori`);
             code = 1;
-          } else if (!(ctx.isRoot() || node.mode & (node.owner === ctx.user ? 0o400 : 0o004))) {
+          } else if (!canRead(node, ctx.user, ctx.isRoot())) {
             ctx.error(`cat: ${f}: Izin ditolak (Permission denied)`);
             ctx.fact(`denied:${abs}`);
             code = 1;
@@ -242,8 +252,14 @@ export const fileCommands: CommandDef[] = [
           return 1;
         }
         const toAbs = fs.resolve(to, ctx.session.cwd);
+        const fromAbs = fs.resolve(from, ctx.session.cwd);
+        const source = fs.get(fromAbs);
+        if (source && !canRead(source, ctx.user, ctx.isRoot())) {
+          ctx.fact(`denied:${fromAbs}`);
+          throw new FsError(`tidak dapat membuka '${from}' untuk dibaca: Izin ditolak (Permission denied)`);
+        }
         assertWritable(ctx, fs.get(toAbs)?.type === "dir" ? `${toAbs}/${from.split("/").pop()}` : toAbs);
-        fs.copy(fs.resolve(from, ctx.session.cwd), toAbs);
+        fs.copy(fromAbs, toAbs);
         ctx.fact("cmd:cp");
       });
     },

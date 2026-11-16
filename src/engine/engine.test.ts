@@ -101,4 +101,21 @@ describe("shell", () => {
     expect(outputText(execute(net, s, "ls").events)).toContain("catatan.txt");
     expect(outputText(execute(net, s, "foo").events)).toContain("perintah tidak ditemukan");
   });
+
+  it("enforces read permissions for every command that reads files", () => {
+    const net = buildNetwork({
+      devices: [{ id: "pc", kind: "pc", position: { x: 0, y: 0 }, files: { "/var/log/rahasia.log": { content: "FLAG{x}\n", owner: "root", mode: 0o600 } } }],
+      links: [],
+    });
+    const s = session(net, "pc");
+    for (const cmd of ["cat", "head", "tail", "grep FLAG", "wc -l", "cp"]) {
+      const line = cmd === "cp" ? "cp /var/log/rahasia.log ~/salinan" : `${cmd} /var/log/rahasia.log`;
+      const out = outputText(execute(net, s, line).events);
+      expect(out, line).toContain("Izin ditolak");
+      expect(out, line).not.toContain("FLAG{x}");
+    }
+    expect(outputText(execute(net, s, "sudo head /var/log/rahasia.log").events)).toContain("FLAG{x}");
+    expect(outputText(execute(net, s, "cd /root").events)).toContain("Izin ditolak");
+    expect(s.cwd).toBe("/home/siswa");
+  });
 });

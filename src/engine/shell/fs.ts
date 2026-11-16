@@ -30,8 +30,9 @@ export class VirtualFS {
   static create(user: string, files: Record<string, FileSpec> = {}): VirtualFS {
     const home = user === "root" ? "/root" : `/home/${user}`;
     const fs = new VirtualFS(home, user);
-    for (const path of ["/bin", "/etc", "/tmp", "/var/log", "/home", home]) fs.mkdirp(path, path === home ? user : "root");
+    for (const path of ["/bin", "/etc", "/tmp", "/var/log", "/home", "/root", home]) fs.mkdirp(path, path === home ? user : "root");
     (fs.get("/tmp") as FsDir).mode = 0o777;
+    (fs.get("/root") as FsDir).mode = 0o700;
     fs.writeFile("/etc/hostname", "localhost\n", "root");
     for (const [path, spec] of Object.entries(files)) {
       const abs = fs.resolve(path, home);
@@ -153,6 +154,16 @@ export class VirtualFS {
     const target = dest?.type === "dir" ? `${toAbs}/${fromAbs.split("/").pop()}` : toAbs;
     this.writeFile(target, node.content);
   }
+}
+
+/** Read permission check (owner bits for the owner, "other" bits for everyone else). */
+export function canRead(node: FsNode, user: string, isRoot: boolean): boolean {
+  return isRoot || (node.mode & (node.owner === user ? 0o400 : 0o004)) !== 0;
+}
+
+/** Execute/search permission (needed to `cd` into a directory). */
+export function canEnter(node: FsNode, user: string, isRoot: boolean): boolean {
+  return isRoot || (node.mode & (node.owner === user ? 0o100 : 0o001)) !== 0;
 }
 
 export function formatMode(node: FsNode): string {

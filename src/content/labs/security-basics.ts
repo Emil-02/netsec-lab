@@ -41,7 +41,11 @@ export const kriptoDasarLab: LabDefinition = {
   objectives: [
     { id: "decode", text: "Baca `pesan.txt`, lalu ubah kembali ke teks asli dengan `base64 -d pesan.txt`", check: has("base64:decoded") },
     { id: "hash", text: "Hitung hash SHA-256 sebuah teks: `echo -n halo | sha256sum`", check: has("sha256sum:stdin") },
-    { id: "avalanche", text: "Ubah satu huruf saja (`echo -n Halo | sha256sum`) dan bandingkan — hasilnya berubah total!", check: has("cmd:sha256sum") },
+    {
+      id: "avalanche",
+      text: "Ubah satu huruf saja (`echo -n Halo | sha256sum`) dan bandingkan — hasilnya berubah total!",
+      check: (ctx) => [...ctx.facts].filter((f) => f.startsWith("sha256sum:stdin:")).length >= 2,
+    },
     {
       id: "files",
       text: "Hitung hash kedua installer dengan `sha256sum` (bisa sekaligus: `sha256sum file1 file2`)",

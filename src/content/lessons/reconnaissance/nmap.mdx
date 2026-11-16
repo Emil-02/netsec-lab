@@ -8,7 +8,7 @@ sudo nmap -sn 10.10.10.0/24
 
 `-sn` = hanya cari host, tanpa port scan. Caranya bergantung pada lokasi target:
 
-- **Satu LAN** → kirim **ARP request** ke setiap alamat. Tidak bisa diblokir firewall IP, karena ARP bekerja di Layer 2!
+- **Satu LAN (dengan sudo)** → kirim **ARP request** ke setiap alamat. Tidak bisa diblokir firewall IP, karena ARP bekerja di Layer 2! Tanpa sudo, nmap hanya bisa mencoba koneksi TCP biasa ke port 80/443.
 - **Jaringan lain** → ICMP echo, TCP SYN ke port 443, TCP ACK ke port 80, dll.
 
 ## 2. Port scanning: pintu mana yang terbuka?
@@ -51,7 +51,7 @@ nmap -p 22,80,443 10.0.0.5  # port tertentu
 nmap -p- 10.0.0.5           # SEMUA 65535 port
 nmap -sV 10.0.0.5           # deteksi versi layanan
 sudo nmap -O 10.0.0.5       # tebak sistem operasi
-nmap -A 10.0.0.5            # agresif: -sV -O + lainnya
+sudo nmap -A 10.0.0.5       # agresif: -sV -O + lainnya (butuh sudo karena ada -O)
 nmap -Pn 10.0.0.5           # lewati host discovery (jika ping diblokir)
 ```
 
@@ -97,7 +97,7 @@ Versi software adalah informasi emas: penyerang mencocokkannya dengan database c
       answer: 1,
     },
     {
-      q: "Kenapa `nmap -sn` di LAN tetap bisa menemukan host yang memblokir ping?",
+      q: "Kenapa `sudo nmap -sn` di LAN tetap bisa menemukan host yang memblokir ping?",
       options: ["Karena memakai ARP di Layer 2", "Karena memakai DNS", "Karena menebak", "Karena memakai HTTP"],
       answer: 0,
     },

@@ -21,7 +21,7 @@ Di sisi penerima terjadi kebalikannya: setiap layer **membuka** header miliknya 
 
 Ini konsep yang **sangat penting** dan sering ditanyakan:
 
-- **Header IP (Layer 3)** → **tetap sama** dari pengirim sampai tujuan akhir (kecuali TTL yang berkurang 1). IP adalah alamat *ujung-ke-ujung*.
+- **Header IP (Layer 3)** → **tetap sama** dari pengirim sampai tujuan akhir (kecuali TTL yang berkurang 1, sehingga checksum header juga dihitung ulang), selama tidak ada NAT di jalurnya. IP adalah alamat *ujung-ke-ujung*.
 - **Header Ethernet (Layer 2)** → **diganti di setiap hop**. Router membuka "amplop" Ethernet lama dan membuat amplop baru dengan MAC dirinya sebagai sumber dan MAC hop berikutnya sebagai tujuan. MAC adalah alamat *hop-ke-hop*.
 
 ```text

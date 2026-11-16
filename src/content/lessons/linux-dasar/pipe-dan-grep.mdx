@@ -35,6 +35,7 @@ cat /var/log/auth.log | grep Failed | wc -l
 Gabungkan pipe dengan redirect untuk membuat laporan:
 
 ```bash
+grep Failed /var/log/auth.log | wc -l > ~/jumlah-gagal.txt
 grep Failed /var/log/auth.log > ~/gagal.txt
 echo "IP mencurigakan: 10.0.0.66" > ~/laporan.txt
 ```

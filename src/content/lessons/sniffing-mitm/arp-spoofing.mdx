@@ -29,7 +29,7 @@ Akibatnya, penyerang dapat:
    ```
 2. **Hop pertama `traceroute`** bukan default gateway, melainkan IP lain di LAN
 3. MAC gateway **berubah** dari yang biasanya
-4. Banyak **ARP reply yang tidak diminta** terlihat di `tcpdump arp`
+4. Banyak **ARP reply yang tidak diminta** (*gratuitous ARP*) terlihat di `tcpdump arp` — alat spoofing sungguhan mengirimnya berulang kali agar tabel ARP korban tetap teracuni (di lab ini tidak disimulasikan)
 5. Peringatan sertifikat HTTPS yang aneh di browser
 
 ## Pertahanan
@@ -39,7 +39,7 @@ Akibatnya, penyerang dapat:
 | **HTTPS / TLS di mana-mana** | walaupun lalu lintas disadap, isinya terenkripsi dan sertifikat palsu terdeteksi |
 | **Entri ARP statis** | `sudo arp -s <ip-gateway> <mac-asli>` — tidak bisa ditimpa ARP palsu (cocok untuk perangkat penting) |
 | **Dynamic ARP Inspection (DAI)** | fitur switch yang memeriksa setiap ARP reply terhadap tabel DHCP snooping dan membuang yang palsu |
-| **Port security** | membatasi MAC yang boleh di setiap port switch |
+| **Port security** | membatasi MAC yang boleh di setiap port switch — menangkal *MAC flooding*, **bukan** ARP spoofing (penyerang memakai MAC-nya sendiri yang sah) |
 | **VLAN & segmentasi** | penyerang hanya bisa meracuni perangkat di VLAN yang sama |
 | **Monitoring** | alat seperti *arpwatch* memberi peringatan saat pemetaan IP–MAC berubah |
 | **VPN** | mengenkripsi seluruh lalu lintas, terutama di Wi-Fi publik |

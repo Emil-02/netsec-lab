@@ -37,6 +37,7 @@ describe("mini SQL engine", () => {
   });
 
   it("reports MySQL-like errors", () => {
+    expect(() => runQuery(db, "SELECT * FROM users WHERE username = 'admin'--x'")).toThrow(SqlError);
     expect(() => runQuery(db, "SELECT * FROM users WHERE username = '''")).toThrow(SqlError);
     expect(() => runQuery(db, "SELECT * FROM rahasia")).toThrow("Table 'app.rahasia' doesn't exist");
     expect(() => runQuery(db, "SELECT nope FROM users")).toThrow("Unknown column 'nope'");

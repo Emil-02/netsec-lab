@@ -158,6 +158,16 @@ describe("DNS", () => {
     expect(text(execute(net, pc, "nslookup tidakada.lab"))).toContain("NXDOMAIN");
   });
 
+  it("supports record types in nslookup and host", () => {
+    const net = buildNetwork(world);
+    const pc = session(net, "pc");
+    expect(text(execute(net, pc, "nslookup -type=MX situs.id"))).toContain("mail exchanger = 10 mail.situs.id.");
+    expect(text(execute(net, pc, "host -t MX situs.id"))).toContain("mail is handled by 10 mail.situs.id.");
+    const noA = text(execute(net, pc, "nslookup -type=TXT situs.id"));
+    expect(noA).toContain("No answer");
+    expect(noA).not.toContain("NXDOMAIN");
+  });
+
   it("uses DNS transparently for ping and curl", () => {
     const net = buildNetwork(world);
     const r = execute(net, session(net, "pc"), "curl http://situs.id/");

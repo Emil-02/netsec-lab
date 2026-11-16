@@ -33,7 +33,7 @@ sudo iptables -A INPUT <kecocokan> -j <target>   # tambah di akhir
 sudo iptables -I INPUT 1 <kecocokan> -j <target> # sisipkan di posisi 1
 sudo iptables -D INPUT 2                    # hapus aturan nomor 2
 sudo iptables -P INPUT DROP                 # ubah policy
-sudo iptables -F                            # hapus semua aturan
+sudo iptables -F                            # hapus semua aturan (policy TIDAK ikut kembali ke ACCEPT!)
 ```
 
 Kecocokan yang sering dipakai:
@@ -49,19 +49,21 @@ Kecocokan yang sering dipakai:
 ## Pola emas: default deny
 
 ```bash
-# 1. izinkan balasan untuk koneksi yang sudah terjalin
+# 1. izinkan lalu lintas lokal (aplikasi ke database di 127.0.0.1, dsb.)
+sudo iptables -A INPUT -i lo -j ACCEPT
+# 2. izinkan balasan untuk koneksi yang sudah terjalin
 sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-# 2. izinkan layanan publik
+# 3. izinkan layanan publik
 sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-# 3. izinkan SSH hanya dari jaringan admin
+# 4. izinkan SSH hanya dari PC admin
 sudo iptables -A INPUT -p tcp --dport 22 -s 10.0.0.5 -j ACCEPT
-# 4. tolak semua yang lain
+# 5. tolak semua yang lain
 sudo iptables -P INPUT DROP
 ```
 
 <Callout type="warning" title="Jangan mengunci diri sendiri!">
-Jika kamu mengelola server dari jauh lewat SSH dan mengubah policy ke DROP **sebelum** mengizinkan SSH, koneksimu langsung terputus dan kamu tidak bisa masuk lagi. Selalu pasang aturan ACCEPT terlebih dahulu.
+Jika kamu mengelola server dari jauh lewat SSH dan mengubah policy ke DROP **sebelum** mengizinkan SSH, koneksimu langsung terputus dan kamu tidak bisa masuk lagi. Selalu pasang aturan ACCEPT terlebih dahulu. Hati-hati juga dengan `iptables -F` saat policy sudah DROP: semua aturan ACCEPT terhapus tapi policy tetap DROP — kamu langsung terkunci.
 </Callout>
 
 ## Stateful firewall

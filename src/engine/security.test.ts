@@ -97,6 +97,9 @@ describe("tcpdump", () => {
   });
 
   it("filters by protocol and host", () => {
+    const quotedNet = buildNetwork(lan);
+    const quoted = execute(quotedNet, session(quotedNet, "kali"), "sudo tcpdump 'icmp'", { background: [{ device: "pc", command: "ping -c 1 10.0.0.20" }] });
+    expect(text(quoted)).toContain("ICMP echo request");
     const net = buildNetwork(lan);
     const r = execute(net, session(net, "kali"), "sudo tcpdump arp", { background: [{ device: "pc", command: "ping -c 1 10.0.0.20" }] });
     const out = text(r);

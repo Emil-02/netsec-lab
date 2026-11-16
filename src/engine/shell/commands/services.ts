@@ -1,4 +1,4 @@
-import type { AppData, DnsRecordType, HttpRequest } from "../../core/types";
+import type { AppData, DnsRecord, DnsRecordType, HttpRequest } from "../../core/types";
 import { applyLease, dhcpObtain } from "../../protocols/dhcp";
 import { DNS_TYPES, dnsQuery, formatRecord, normalizeName, resolversOf } from "../../protocols/dns";
 import { fakeCiphertext, formatRequestLines, formatResponseHead, handleHttp, parseForm, parseUrl, statusText } from "../../protocols/http";
@@ -25,10 +25,34 @@ function pickServer(ctx: CommandContext, explicit?: string) {
   return resolversOf(ctx.device)[0] ?? null;
 }
 
+function nslookupLine(r: DnsRecord) {
+  const n = normalizeName(r.name);
+  switch (r.type) {
+    case "CNAME":
+      return `${n}\tcanonical name = ${r.value}.`;
+    case "MX":
+      return `${n}\tmail exchanger = 10 ${r.value}.`;
+    case "TXT":
+      return `${n}\ttext = "${r.value}"`;
+    case "NS":
+      return `${n}\tnameserver = ${r.value}.`;
+    case "AAAA":
+      return `Name:\t${n}\nAddress: ${r.value}`;
+    default:
+      return `Name:\t${n}\nAddress: ${ansi.green(r.value)}`;
+  }
+}
+
 function nslookup(ctx: CommandContext) {
+  const typeArg = ctx.args.find((a) => /^-(type|query|q)=/i.test(a));
+  const type = (typeArg?.split("=")[1] ?? "A").toUpperCase() as DnsRecordType;
+  if (!DNS_TYPES.includes(type)) {
+    ctx.error(`nslookup: tipe record "${type}" tidak dikenal. Pilihan: ${DNS_TYPES.join(", ")}`);
+    return 1;
+  }
   const [name, server] = ctx.args.filter((a) => !a.startsWith("-"));
   if (!name) {
-    ctx.error("Penggunaan: nslookup <nama> [dns-server]");
+    ctx.error("Penggunaan: nslookup [-type=A|MX|TXT|...] <nama> [dns-server]");
     return 1;
   }
   const dns = pickServer(ctx, server);
@@ -37,7 +61,7 @@ function nslookup(ctx: CommandContext) {
     ctx.fact("dns:no-resolver");
     return 1;
   }
-  const res = dnsQuery(ctx.net, ctx.t, ctx.device, dns, name, "A");
+  const res = dnsQuery(ctx.net, ctx.t, ctx.device, dns, name, type);
   ctx.t = res.t;
   const q = normalizeName(name);
   if (res.status === "timeout" || res.status === "unreachable" || res.status === "refused") {
@@ -49,22 +73,21 @@ function nslookup(ctx: CommandContext) {
   ctx.print(`Server:\t\t${dns}`);
   ctx.print(`Address:\t${dns}#53`);
   ctx.print("");
-  if (res.status !== "NOERROR" || !res.answers.some((a) => a.type === "A")) {
-    ctx.print(ansi.red(`** server can't find ${q}: ${res.status === "NOERROR" ? "NXDOMAIN" : res.status}`));
+  ctx.fact(`dns:server:${dns}`);
+  if (res.status !== "NOERROR") {
+    ctx.print(ansi.red(`** server can't find ${q}: ${res.status}`));
     ctx.fact(`dns:nxdomain:${q}`);
     return 1;
   }
-  ctx.print("Non-authoritative answer:");
-  for (const r of res.answers) {
-    if (r.type === "CNAME") ctx.print(`${normalizeName(r.name)}\tcanonical name = ${r.value}.`);
-    if (r.type === "A") {
-      ctx.print(`Name:\t${normalizeName(r.name)}`);
-      ctx.print(`Address: ${ansi.green(r.value)}`);
-    }
+  if (!res.answers.some((a) => a.type === type)) {
+    ctx.print(ansi.yellow(`*** Can't find ${q}: No answer`));
+    ctx.print(ansi.dim(`(nama ini ada, tapi tidak punya record ${type}. Coba tipe lain, mis. -type=TXT)`));
+    return 1;
   }
-  ctx.fact(`dns:ok:${q}`);
-  ctx.fact(`dns:ok:${q}:A`);
-  ctx.fact(`dns:server:${dns}`);
+  ctx.print("Non-authoritative answer:");
+  for (const r of res.answers) ctx.print(nslookupLine(r));
+  ctx.fact(`dns:ok:${q}:${type}`);
+  if (type === "A") ctx.fact(`dns:ok:${q}`);
   return 0;
 }
 
@@ -127,9 +150,15 @@ function dig(ctx: CommandContext) {
 }
 
 function hostCmd(ctx: CommandContext) {
-  const [name, server] = ctx.args.filter((a) => !a.startsWith("-"));
+  const tIdx = ctx.args.indexOf("-t");
+  const wanted = tIdx >= 0 ? (ctx.args[tIdx + 1] ?? "").toUpperCase() : null;
+  if (wanted !== null && !DNS_TYPES.includes(wanted as DnsRecordType)) {
+    ctx.error(`host: tipe record "${wanted}" tidak dikenal. Pilihan: ${DNS_TYPES.join(", ")}`);
+    return 1;
+  }
+  const [name, server] = ctx.args.filter((a, i) => !a.startsWith("-") && !(tIdx >= 0 && i === tIdx + 1));
   if (!name) {
-    ctx.error("Penggunaan: host <nama> [dns-server]");
+    ctx.error("Penggunaan: host [-t A|MX|TXT|...] <nama> [dns-server]");
     return 1;
   }
   const dns = pickServer(ctx, server);
@@ -139,7 +168,8 @@ function hostCmd(ctx: CommandContext) {
   }
   const q = normalizeName(name);
   let found = false;
-  for (const type of ["A", "MX"] as DnsRecordType[]) {
+  const types: DnsRecordType[] = wanted ? [wanted as DnsRecordType] : ["A", "MX"];
+  for (const type of types) {
     const res = dnsQuery(ctx.net, ctx.t, ctx.device, dns, q, type);
     ctx.t = res.t;
     if (res.status === "timeout" || res.status === "unreachable" || res.status === "refused") {
@@ -153,11 +183,17 @@ function hostCmd(ctx: CommandContext) {
     }
     for (const r of res.answers) {
       found = true;
-      if (r.type === "A") ctx.print(`${normalizeName(r.name)} has address ${ansi.green(r.value)}`);
-      if (r.type === "CNAME") ctx.print(`${normalizeName(r.name)} is an alias for ${r.value}.`);
-      if (r.type === "MX") ctx.print(`${normalizeName(r.name)} mail is handled by 10 ${r.value}.`);
+      const n = normalizeName(r.name);
+      if (r.type === "A") ctx.print(`${n} has address ${ansi.green(r.value)}`);
+      if (r.type === "AAAA") ctx.print(`${n} has IPv6 address ${r.value}`);
+      if (r.type === "CNAME") ctx.print(`${n} is an alias for ${r.value}.`);
+      if (r.type === "MX") ctx.print(`${n} mail is handled by 10 ${r.value}.`);
+      if (r.type === "TXT") ctx.print(`${n} descriptive text "${r.value}"`);
+      if (r.type === "NS") ctx.print(`${n} name server ${r.value}.`);
     }
+    if (res.answers.length) ctx.fact(`dns:ok:${q}:${type}`);
   }
+  if (!found && wanted) ctx.print(`${q} has no ${wanted} record`);
   if (found) ctx.fact(`dns:ok:${q}`);
   return found ? 0 : 1;
 }
@@ -512,7 +548,7 @@ function dhclient(ctx: CommandContext) {
     return 2;
   }
   applyLease(ctx.device, iface.name, res.lease);
-  if (verbose) ctx.print(ansi.green(`bound to ${res.lease.ip} -- renewal in 43200 seconds.`));
+  if (verbose) ctx.print(ansi.green(`bound to ${res.lease.ip} -- renewal in 21600 seconds.`));
   ctx.fact(`dhcp:bound:${iface.name}:${res.lease.ip}`);
   return 0;
 }
@@ -542,9 +578,9 @@ function tee(ctx: CommandContext) {
 }
 
 export const serviceCommands: CommandDef[] = [
-  { name: "nslookup", category: "jaringan", summary: "Menanyakan alamat IP sebuah nama domain ke DNS server", usage: "nslookup <nama> [dns-server]", run: nslookup },
+  { name: "nslookup", category: "jaringan", summary: "Menanyakan alamat IP (atau record lain) sebuah nama domain ke DNS server", usage: "nslookup [-type=A|MX|TXT|NS|CNAME|AAAA] <nama> [dns-server]", run: nslookup },
   { name: "dig", category: "jaringan", summary: "Alat query DNS yang detail (A, MX, CNAME, TXT, NS)", usage: "dig [@server] <nama> [tipe] [+short]", run: dig },
-  { name: "host", category: "jaringan", summary: "Query DNS singkat", usage: "host <nama> [dns-server]", run: hostCmd },
+  { name: "host", category: "jaringan", summary: "Query DNS singkat", usage: "host [-t A|MX|TXT|NS] <nama> [dns-server]", run: hostCmd },
   { name: "curl", category: "jaringan", summary: "Mengirim request HTTP/HTTPS ke web server", usage: "curl [-v] [-I] [-i] [-L] [-d data] [-X METHOD] [-H 'K: V'] [-o file] <url>", run: curl },
   { name: "nc", aliases: ["netcat"], category: "jaringan", summary: "Netcat: membuka koneksi TCP ke port tertentu", usage: "nc [-v] [-z] <host> <port>[-port]", run: nc },
   { name: "ss", category: "jaringan", summary: "Menampilkan port yang sedang listening di perangkat ini", usage: "ss -tuln [-p]", run: (ctx) => sockets(ctx, "ss") },

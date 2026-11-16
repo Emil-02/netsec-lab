@@ -3,7 +3,7 @@ import type { Network } from "../core/network";
 import type { AppData, Device, DnsRecord, DnsRecordType } from "../core/types";
 import { udpExchange } from "./transport";
 
-export const DNS_TYPES: DnsRecordType[] = ["A", "CNAME", "MX", "TXT", "NS"];
+export const DNS_TYPES: DnsRecordType[] = ["A", "AAAA", "CNAME", "MX", "TXT", "NS"];
 
 export function normalizeName(name: string) {
   return name.trim().toLowerCase().replace(/\.$/, "");

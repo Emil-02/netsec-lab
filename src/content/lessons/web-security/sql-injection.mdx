@@ -38,7 +38,7 @@ Jika username diisi `admin' -- `, query menjadi:
 SELECT * FROM users WHERE username = 'admin' -- ' AND password = '...'
 ```
 
-Di SQL, `--` adalah **komentar**: semua setelahnya diabaikan. Pengecekan password hilang, dan database mengembalikan akun admin.
+Di SQL, `--` adalah **komentar**: semua setelahnya diabaikan. Pengecekan password hilang, dan database mengembalikan akun admin. Perhatikan spasi setelah `--`: di MySQL, `--` hanya dianggap komentar jika diikuti spasi (alternatifnya `#`).
 
 ## Dampak 2: membongkar isi database dengan UNION
 
@@ -72,6 +72,10 @@ $stmt->execute([$user, $hash]);
 ```
 
 Apa pun isi `$user` — termasuk `admin' -- ` — database memperlakukannya sebagai **teks biasa** yang dicari di kolom username. Struktur query **tidak mungkin berubah**.
+
+<Callout type="info" title="Catatan teknis">
+Beberapa driver (misalnya PDO untuk MySQL) secara bawaan "meniru" prepared statement di sisi aplikasi (*emulated prepares*), tetapi tetap meng-escape nilainya dengan benar sehingga aman. Untuk prepared statement sungguhan di sisi database, atur `PDO::ATTR_EMULATE_PREPARES => false`.
+</Callout>
 
 | Pertahanan | Fungsi |
 |---|---|

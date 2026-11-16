@@ -41,7 +41,8 @@ export function tokenize(sql: string, params: Value[] = []): Token[] {
     const c = sql[i];
     if (/\s/.test(c)) {
       i++;
-    } else if (c === "#" || (c === "-" && sql[i + 1] === "-")) {
+    } else if (c === "#" || (c === "-" && sql[i + 1] === "-" && (i + 2 >= sql.length || /\s/.test(sql[i + 2])))) {
+      // MySQL only treats "--" as a comment when it is followed by whitespace (or ends the query).
       while (i < sql.length && sql[i] !== "\n") i++;
     } else if (c === ";") {
       i++;

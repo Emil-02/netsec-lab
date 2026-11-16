@@ -53,7 +53,7 @@ export interface MacEntry {
   vlan: number;
 }
 
-export type DnsRecordType = "A" | "CNAME" | "MX" | "TXT" | "NS";
+export type DnsRecordType = "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS";
 
 export interface DnsRecord {
   name: string;

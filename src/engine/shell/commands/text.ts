@@ -1,14 +1,21 @@
-import { FsError } from "../fs";
+import { canRead, FsError } from "../fs";
 import { hasFlag, positional, type CommandContext, type CommandDef } from "../types";
 
 function readInput(ctx: CommandContext, file: string | undefined): string | null {
   if (!file) return ctx.stdin ?? "";
   const fs = ctx.device.fs;
-  const node = fs?.get(fs.resolve(file, ctx.session.cwd));
+  const abs = fs?.resolve(file, ctx.session.cwd);
+  const node = abs ? fs!.get(abs) : null;
   if (!node || node.type !== "file") {
     ctx.error(`${ctx.name}: ${file}: Tidak ada file atau direktori tersebut`);
     return null;
   }
+  if (!canRead(node, ctx.user, ctx.isRoot())) {
+    ctx.error(`${ctx.name}: ${file}: Izin ditolak (Permission denied)`);
+    ctx.fact(`denied:${abs}`);
+    return null;
+  }
+  ctx.fact(`read:${abs}`);
   return node.content;
 }
 

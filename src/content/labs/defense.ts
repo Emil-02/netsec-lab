@@ -60,7 +60,8 @@ export const hashCrackLab: LabDefinition = {
         if (f?.type !== "file") return false;
         const lines = f.content.toLowerCase();
         const weak = ["budi", "sari", "admin", "dodi"];
-        return weak.every((u) => lines.includes(u)) && !lines.includes("andi") && !lines.includes("rina") && !lines.includes("sayang123");
+        const leaked = USERS.some(([, p]) => lines.includes(p.toLowerCase()));
+        return weak.every((u) => lines.includes(u)) && !lines.includes("andi") && !lines.includes("rina") && !leaked;
       },
     },
   ],
@@ -170,7 +171,7 @@ function blockRule(ctx: LabContext) {
 export const incidentLab: LabDefinition = {
   id: "respons-insiden",
   title: "Respons Insiden: Hentikan Brute Force",
-  summary: "Log menunjukkan ribuan percobaan login dari satu IP. Analisis log, blokir penyerang, dan catat setiap upaya berikutnya.",
+  summary: "Log menunjukkan puluhan percobaan login gagal dari satu IP. Analisis log, blokir penyerang, dan catat setiap upaya berikutnya.",
   difficulty: "mahir",
   estimatedMinutes: 20,
   xp: 180,
@@ -215,7 +216,11 @@ export const incidentLab: LabDefinition = {
   objectives: [
     { id: "count", text: "Hitung jumlah login gagal: `grep Failed /var/log/auth.log | wc -l`", check: (ctx) => ctx.facts.has("cmd:grep") && ctx.facts.has("cmd:wc") },
     { id: "source", text: `Temukan IP penyerang (petunjuk: \`grep ${"Failed"} /var/log/auth.log | tail\`)`, check: (ctx) => ctx.facts.has("cmd:tail") || ctx.facts.has("cmd:head") || ctx.facts.has("cat:/var/log/auth.log") },
-    { id: "test", text: "Dari **Penyerang**, pastikan port 22 server masih terbuka: `nc -zv 10.0.0.20 22`", check: has("nc:open:10.0.0.20:22") },
+    {
+      id: "test",
+      text: "Dari **Penyerang**, uji akses ke SSH server: `nc -zv 10.0.0.20 22` (idealnya **sebelum** memblokir, agar kamu tahu perbedaannya)",
+      check: (ctx) => ctx.facts.has("nc:open:10.0.0.20:22") || ctx.facts.has("nc:failed:10.0.0.20:22"),
+    },
     { id: "block", text: "Di server, blokir IP penyerang: `iptables -A INPUT -s <IP> -j DROP`", check: (ctx) => blockRule(ctx) >= 0 },
     {
       id: "log",

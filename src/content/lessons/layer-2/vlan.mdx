@@ -9,10 +9,12 @@ VLAN membagi **satu switch fisik** menjadi **beberapa switch virtual**. Port yan
 ```text
           Switch fisik
  ┌──────────────────────────────┐
- │ VLAN 10 (Staf) : p1 p2 p3     │  ← satu broadcast domain
- │ VLAN 20 (HRD)  : p4 p5        │  ← broadcast domain lain
+ │ VLAN 10 (Staf) : p1 p2        │  ← satu broadcast domain
+ │ VLAN 20 (HRD)  : p3 p4        │  ← broadcast domain lain
  └──────────────────────────────┘
 ```
+
+Dalam praktiknya, setiap VLAN biasanya juga diberi **subnet IP sendiri** (misalnya VLAN 10 = 10.0.10.0/24, VLAN 20 = 10.0.20.0/24).
 
 Manfaat VLAN:
 
@@ -27,7 +29,7 @@ Manfaat VLAN:
 | **Access** | milik **satu** VLAN; untuk PC, printer, dll. | `p3` di VLAN 20 |
 | **Trunk** | membawa **banyak** VLAN sekaligus; untuk link antar switch | `p8` menuju switch lain |
 
-Agar switch di seberang tahu sebuah frame milik VLAN mana, switch menempelkan **tag 802.1Q** (berisi nomor VLAN) saat frame melewati trunk, lalu melepasnya lagi sebelum dikirim ke PC.
+Agar switch di seberang tahu sebuah frame milik VLAN mana, switch menempelkan **tag 802.1Q** (berisi nomor VLAN) saat frame melewati trunk, lalu melepasnya lagi sebelum dikirim ke PC. Pengecualian: frame milik **native VLAN** (secara default VLAN 1) dikirim melewati trunk **tanpa tag** — karena itu di lab, frame milik PC staf di VLAN 1 tidak punya tag.
 
 ```text
 HRD-1 ──(tanpa tag)──▶ Switch-1 ══[VLAN 20 | frame]══▶ Switch-2 ──(tanpa tag)──▶ HRD-2
@@ -36,10 +38,10 @@ HRD-1 ──(tanpa tag)──▶ Switch-1 ══[VLAN 20 | frame]══▶ Switc
 
 ## Lalu bagaimana jika VLAN berbeda perlu berkomunikasi?
 
-Lalu lintas antar VLAN harus melewati perangkat **Layer 3** (router atau *Layer 3 switch*) — teknik ini disebut **inter-VLAN routing**. Keuntungannya: di titik itu kita bisa memasang **firewall** untuk mengatur siapa boleh bicara dengan siapa.
+Lalu lintas antar VLAN harus melewati perangkat **Layer 3** (router atau *Layer 3 switch*) — teknik ini disebut **inter-VLAN routing**. Syaratnya, setiap VLAN memakai subnet yang berbeda, sehingga perangkat mengirim paket ke gateway (router) alih-alih mencoba ARP langsung. Keuntungannya: di titik itu kita bisa memasang **firewall** untuk mengatur siapa boleh bicara dengan siapa.
 
 <Callout type="warning" title="VLAN bukan pengaman sempurna">
-Konfigurasi trunk yang ceroboh dapat dimanfaatkan dengan serangan **VLAN hopping** (misalnya *double tagging*). Praktik baiknya: jangan pakai VLAN 1 untuk pengguna, matikan port yang tidak dipakai, dan jadikan trunk hanya port yang memang menuju switch lain.
+Konfigurasi trunk yang ceroboh dapat dimanfaatkan dengan serangan **VLAN hopping** (misalnya *double tagging*). Praktik baiknya: jangan pakai VLAN 1 untuk pengguna, matikan port yang tidak dipakai, dan jadikan trunk hanya port yang memang menuju switch lain. (Di lab, PC staf sengaja dibiarkan di VLAN 1 agar sederhana.)
 </Callout>
 
 <LabCTA labId="vlan" />
@@ -49,8 +51,9 @@ Konfigurasi trunk yang ceroboh dapat dimanfaatkan dengan serangan **VLAN hopping
   questions={[
     {
       q: "Dua PC dengan subnet sama tapi berada di VLAN berbeda (switch yang sama). Apakah mereka bisa saling ping?",
-      options: ["Bisa, karena subnetnya sama", "Tidak bisa tanpa router/inter-VLAN routing", "Bisa jika pakai kabel lebih panjang", "Hanya bisa lewat Wi-Fi"],
+      options: ["Bisa, karena subnetnya sama", "Tidak bisa, karena mereka berada di broadcast domain yang berbeda", "Bisa jika pakai kabel lebih panjang", "Hanya bisa lewat Wi-Fi"],
       answer: 1,
+      explanation: "ARP mereka tidak pernah sampai ke VLAN lain. Agar bisa berkomunikasi, tiap VLAN perlu subnet sendiri dan inter-VLAN routing.",
     },
     {
       q: "Port yang membawa banyak VLAN antar switch disebut…",

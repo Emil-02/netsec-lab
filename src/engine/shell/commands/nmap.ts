@@ -16,6 +16,7 @@ const TOP_TCP = new Set([
   49157,
 ]);
 const TOP_UDP = new Set([53, 67, 68, 69, 123, 135, 137, 138, 139, 161, 162, 445, 500, 514, 520, 631, 1434, 1900, 4500, 49152]);
+const UDP_PROBED = new Set([53, 67, 123, 137, 161, 500, 1900]);
 const DEFAULT_RANGE_SIZE = 1000;
 const MAX_HOSTS = 256;
 
@@ -190,7 +191,10 @@ function udpProbe(net: Network, t: number, scanner: Device, dst: string, port: n
     udp: { srcPort: net.nextPort(), dstPort: port },
   });
   if (out.status === "delivered") {
-    if (listeningService(out.device, "udp", port, out.packet.ip!.dst)) return { state: "open", t: out.t + HOP_MS };
+    if (listeningService(out.device, "udp", port, out.packet.ip!.dst)) {
+      // nmap sends protocol-specific payloads to these ports and gets a reply; other services stay silent.
+      return { state: UDP_PROBED.has(port) ? "open" : "open|filtered", t: out.t + HOP_MS };
+    }
     const back = net.sendIp(out.t + PROCESS_MS, out.device, {
       id: net.nextPacketId(),
       ip: { src: out.packet.ip!.dst, dst: out.packet.ip!.src, ttl: 64, protocol: "ICMP" },

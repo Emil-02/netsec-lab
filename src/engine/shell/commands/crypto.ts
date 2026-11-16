@@ -26,8 +26,10 @@ function hashCommand(name: string, fn: (s: string) => string, summary: string): 
     run(ctx) {
       const files = positional(ctx.args);
       if (!files.length) {
-        ctx.print(`${fn(ctx.stdin ?? "")}  -`);
+        const digest = fn(ctx.stdin ?? "");
+        ctx.print(`${digest}  -`);
         ctx.fact(`${name}:stdin`);
+        ctx.fact(`${name}:stdin:${digest}`);
         return 0;
       }
       let code = 0;

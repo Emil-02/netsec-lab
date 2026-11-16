@@ -135,7 +135,10 @@ function tcpdump(ctx: CommandContext): number {
   const ascii = hasFlag(args, "-A");
   const promisc = !hasFlag(args, "-p");
   const valued = new Set(["-i", "-c", "-w", "-s"]);
-  const filterWords = args.filter((a, i) => !a.startsWith("-") && !(i > 0 && valued.has(args[i - 1])));
+  // A quoted filter ('tcp port 80') arrives as one argument; tcpdump joins and re-splits it.
+  const filterWords = args
+    .filter((a, i) => !a.startsWith("-") && !(i > 0 && valued.has(args[i - 1])))
+    .flatMap((a) => a.split(/\s+/).filter(Boolean));
   const match = parseFilter(filterWords);
   if (typeof match === "string") {
     ctx.error(match);

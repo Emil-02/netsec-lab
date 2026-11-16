@@ -51,7 +51,7 @@ Menulis `255.255.255.0` itu panjang. **CIDR** menyingkatnya dengan **jumlah bit 
 Jadi `192.168.1.10/24` = IP `192.168.1.10` dengan mask `255.255.255.0`.
 
 <Callout type="tip" title="Rumus jumlah host">
-Jumlah host valid = **2<sup>(32 − prefix)</sup> − 2**. Dikurangi 2 karena alamat pertama dipakai sebagai **alamat network** dan alamat terakhir sebagai **alamat broadcast**.
+Jumlah host valid = **2<sup>(32 − prefix)</sup> − 2**. Dikurangi 2 karena alamat pertama dipakai sebagai **alamat network** dan alamat terakhir sebagai **alamat broadcast**. Pengecualian: **/31** (2 alamat, keduanya dipakai untuk link point-to-point antar router) dan **/32** (tepat 1 host).
 </Callout>
 
 ## Kenapa perangkat perlu tahu subnet mask?
