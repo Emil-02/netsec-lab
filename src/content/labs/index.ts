@@ -1,5 +1,6 @@
 import type { LabDefinition } from "@/engine";
 import { dhcpLab, dnsLab, httpLab } from "./apps";
+import { ctfLab } from "./ctf";
 import { firewallLab, hashCrackLab, incidentLab } from "./defense";
 import { kriptoDasarLab, reconLab } from "./security-basics";
 import { arpDefenseLab, sniffingLab } from "./sniffing";
@@ -9,6 +10,7 @@ import { enkapsulasi, hubVsSwitch, konfigurasiIp } from "./network";
 import { natLab, staticRouteLab } from "./routing";
 import { portLab, tcpHandshakeLab } from "./transport";
 import { turLab } from "./tur-lab";
+import { sqliLab, xssLab } from "./websec";
 
 export const labList: LabDefinition[] = [
   turLab,
@@ -36,6 +38,9 @@ export const labList: LabDefinition[] = [
   hashCrackLab,
   firewallLab,
   incidentLab,
+  sqliLab,
+  xssLab,
+  ctfLab,
 ];
 
 export const labs: Record<string, LabDefinition> = Object.fromEntries(labList.map((l) => [l.id, l]));

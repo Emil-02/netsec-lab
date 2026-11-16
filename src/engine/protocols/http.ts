@@ -30,7 +30,9 @@ export function parseForm(body: string): Record<string, string> {
   const out: Record<string, string> = {};
   for (const pair of body.split("&")) {
     if (!pair) continue;
-    const [k, v = ""] = pair.split("=");
+    const eq = pair.indexOf("=");
+    const k = eq < 0 ? pair : pair.slice(0, eq);
+    const v = eq < 0 ? "" : pair.slice(eq + 1);
     try {
       out[decodeURIComponent(k.replace(/\+/g, " "))] = decodeURIComponent(v.replace(/\+/g, " "));
     } catch {

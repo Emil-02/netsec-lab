@@ -27,6 +27,8 @@ export interface SqlApp {
   query(path: string, sql: string): QueryResult | { error: string };
   /** Prepared statement: `?` placeholders are bound as data. */
   prepared(path: string, sql: string, params: Value[]): QueryResult | { error: string };
+  /** Labels the most recent query (read by lab objectives). */
+  tag(tag: string): void;
 }
 
 export function createSqlApp(db: Database): SqlApp {
@@ -47,6 +49,10 @@ export function createSqlApp(db: Database): SqlApp {
     log,
     query: (path, sql) => exec(path, sql),
     prepared: (path, sql, params) => exec(path, sql, params),
+    tag(tag) {
+      const last = log[log.length - 1];
+      if (last) last.tag = tag;
+    },
   };
 }
 

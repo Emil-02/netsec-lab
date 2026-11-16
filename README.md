@@ -65,5 +65,9 @@ src/
   penghitung paket), `nmap` (-sn/-sS/-sT/-sU/-sV/-O/-p-), `tcpdump` (filter & -A, menangkap lalu lintas latar belakang lab),
   hash `md5sum`/`sha256sum`/`base64`, `john` (dictionary attack terhadap hash), deteksi ARP spoofing (`arp -s` statis)
 - ✅ Playback animasi memakai satu loop `requestAnimationFrame` (scan /24 dengan >1000 paket tetap lancar)
-- ✅ Modul 0–13 (40 materi, 25 lab, kuis, diagram urutan interaktif)
-- ⏳ Berikutnya: login & database (Supabase), web security (SQLi/XSS), CTF mini, SSH interaktif
+- ✅ Web security: mini SQL engine (SELECT, WHERE, LIKE, UNION, `information_schema`, prepared statement `?`) di
+  `engine/webapp/`, aplikasi rentan `toko.lab` (SQLi) & `forum.lab` (XSS) dengan versi aman `/v2`, log query di panel
+  perangkat, perintah `browser` + tab Browser (iframe sandbox + CSP, skrip tidak pernah dijalankan)
+- ✅ CTF Mini: 6 tantangan, `submit-flag` (flag disimpan sebagai hash SHA-256)
+- ✅ Modul 0–15 lengkap (44 materi, 28 lab, kuis, diagram urutan interaktif)
+- ⏳ Berikutnya: login & database (Supabase) untuk sinkronisasi progres & leaderboard, SSH interaktif

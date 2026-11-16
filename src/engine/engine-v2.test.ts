@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildNetwork, execute, type HopEvent, type Network, type ShellSession, type TopologySpec } from "@/engine";
+import { parseForm, parseUrl } from "@/engine/protocols/http";
 
 function session(net: Network, id: string): ShellSession {
   const device = net.device(id);
@@ -206,6 +207,11 @@ describe("HTTP(S)", () => {
     expect(text(execute(net, pc, "curl -I http://situs.id/nope"))).toContain("HTTP/1.1 404 Not Found");
     expect(text(execute(net, pc, "curl http://192.168.1.53/"))).toContain("Connection refused");
     expect(text(execute(net, pc, "curl http://nama-asal.lab/"))).toContain("Could not resolve host");
+  });
+
+  it("keeps '=' inside form and query values", () => {
+    expect(parseForm("pesan=<img src=x onerror=alert(1)>&a=1")).toEqual({ pesan: "<img src=x onerror=alert(1)>", a: "1" });
+    expect(parseUrl("http://x.lab/cari?q=' OR '1'='1")?.query.q).toBe("' OR '1'='1");
   });
 });
 

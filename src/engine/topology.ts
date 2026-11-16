@@ -31,8 +31,11 @@ export interface DeviceSpec {
   dhcpServer?: { iface: string; start: string; end: string; prefix: number; gateway: string; dns: string[] };
   /** Pre-enabled NAT masquerade on this outside interface. */
   nat?: { outside: string };
-  /** Makes this device a web server (adds tcp/80 unless services already define it). */
-  web?: WebServerConfig & { https?: boolean; port?: number };
+  /**
+   * Makes this device a web server (adds tcp/80 unless services already define it).
+   * May be a factory so every lab (re)start gets fresh app state, such as a database.
+   */
+  web?: WebSpec | (() => WebSpec);
   /** Forward IP packets for others (routers do this by default; e.g. a MITM host). */
   ipForward?: boolean;
   /** SSH login accounts (username -> password). */
@@ -47,6 +50,8 @@ export interface DeviceSpec {
   /** Files to create in the device's virtual filesystem (relative paths are under $HOME). */
   files?: Record<string, FileSpec>;
 }
+
+export type WebSpec = WebServerConfig & { https?: boolean; port?: number };
 
 export interface TopologySpec {
   /** Active ARP spoofing at lab start: `victim` believes `ip` belongs to `attacker`. */
@@ -72,14 +77,14 @@ function defaultUser(kind: DeviceKind) {
   return "siswa";
 }
 
-function withDefaultServices(ds: DeviceSpec): Service[] {
+function withDefaultServices(ds: DeviceSpec, web: WebSpec | undefined): Service[] {
   const services = [...(ds.services ?? [])];
   const ensure = (s: Service) => {
     if (!services.some((x) => x.port === s.port && x.protocol === s.protocol)) services.push(s);
   };
-  if (ds.web) {
-    ensure({ port: ds.web.port ?? 80, protocol: "tcp", name: "http" });
-    if (ds.web.https) ensure({ port: 443, protocol: "tcp", name: "https" });
+  if (web) {
+    ensure({ port: web.port ?? 80, protocol: "tcp", name: "http" });
+    if (web.https) ensure({ port: 443, protocol: "tcp", name: "https" });
   }
   if (ds.dnsServer) ensure({ port: 53, protocol: "udp", name: "domain" });
   if (ds.dhcpServer) ensure({ port: 67, protocol: "udp", name: "bootps" });
@@ -92,6 +97,7 @@ export function buildNetwork(spec: TopologySpec): Network {
   spec.devices.forEach((ds, index) => {
     const user = ds.user ?? defaultUser(ds.kind);
     const hostname = ds.hostname ?? ds.id;
+    const web = typeof ds.web === "function" ? ds.web() : ds.web;
     const device: Device = {
       id: ds.id,
       name: ds.name ?? ds.id,
@@ -105,14 +111,14 @@ export function buildNetwork(spec: TopologySpec): Network {
       routes: [],
       arp: new Map(),
       macTable: new Map(),
-      services: withDefaultServices(ds),
+      services: withDefaultServices(ds, web),
       forwarding: ds.ipForward ?? ROUTING_KINDS.includes(ds.kind),
       hosts: ds.hosts ?? {},
       dnsServers: ds.dns ?? [],
       dns: ds.dnsServer ? { records: ds.dnsServer.records, forwarder: ds.dnsServer.forwarder } : undefined,
       dhcp: ds.dhcpServer ? { ...ds.dhcpServer, leases: new Map() } : undefined,
       nat: { rules: ds.nat ? [{ chain: "POSTROUTING", out: ds.nat.outside, target: "MASQUERADE" }] : [], table: new Map() },
-      web: ds.web ? { software: ds.web.software, routes: ds.web.routes } : undefined,
+      web: web ? { software: web.software, routes: web.routes, sqlLog: web.sqlLog, state: web.state } : undefined,
       accounts: ds.accounts ?? {},
       os: ds.os,
       firewall: emptyFirewall(),

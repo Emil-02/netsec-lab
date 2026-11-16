@@ -6,6 +6,7 @@ import {
   evaluateObjectives,
   execute,
   type ExecResult,
+  type BrowserEvent,
   type HopEvent,
   type LabDefinition,
   type PendingInput,
@@ -51,10 +52,13 @@ export interface LabState {
   packetLog: LoggedPacket[];
   selectedPacket: number | null;
   selectedDevice: string | null;
-  bottomTab: "paket" | "perangkat";
+  bottomTab: "paket" | "perangkat" | "browser";
   hintsRevealed: number;
   /** A command is waiting for input (e.g. a password prompt). */
   pending: { prompt: string; secret: boolean } | null;
+  /** Pages opened with the `browser` command, newest last. */
+  pages: BrowserEvent[];
+  currentPage: number | null;
 
   session(): ShellSession;
   run(line: string, io: TerminalIO): void;
@@ -65,6 +69,7 @@ export interface LabState {
   selectPacket(no: number | null): void;
   selectDevice(id: string | null): void;
   setBottomTab(tab: LabState["bottomTab"]): void;
+  showPage(index: number): void;
   addFact(fact: string): void;
   addFacts(facts: string[]): void;
   revealHint(): void;
@@ -111,6 +116,8 @@ export function createLabStore(lab: LabDefinition, onComplete?: (lab: LabDefinit
       hintsRevealed: 0,
       running: false,
       pending: null,
+      pages: [] as BrowserEvent[],
+      currentPage: null,
     };
   };
 
@@ -150,6 +157,11 @@ export function createLabStore(lab: LabDefinition, onComplete?: (lab: LabDefinit
       playback = new Playback(result, state.speed, {
         output: (text) => io.write(text),
         hopStarted: (event) => buffer.push({ no: 0, time: base + event.at, event }),
+        browser: (page) =>
+          set((s) => {
+            const pages = [...s.pages, page].slice(-20);
+            return { pages, currentPage: pages.length - 1, bottomTab: "browser" };
+          }),
         activeChanged: (hops) => {
           flushLog();
           set({ activeHops: [...hops] });
@@ -186,7 +198,7 @@ export function createLabStore(lab: LabDefinition, onComplete?: (lab: LabDefinit
 
       run(line, io) {
         const state = get();
-        const result = execute(state.net, state.session(), line, { allowedCommands: lab.allowedCommands, background: lab.background });
+        const result = execute(state.net, state.session(), line, { allowedCommands: lab.allowedCommands, background: lab.background, flags: lab.flags });
         play(result, io);
       },
 
@@ -244,6 +256,8 @@ export function createLabStore(lab: LabDefinition, onComplete?: (lab: LabDefinit
       },
 
       setBottomTab: (bottomTab) => set({ bottomTab }),
+
+      showPage: (index) => set((s) => ({ currentPage: Math.max(0, Math.min(s.pages.length - 1, index)) })),
 
       addFact(fact) {
         get().addFacts([fact]);

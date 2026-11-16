@@ -106,6 +106,10 @@ export class Network {
     this.events.push({ kind: "output", at, text });
   }
 
+  showPage(at: number, page: { url: string; status: number; html: string; scripts: string[] }) {
+    this.events.push({ kind: "browser", at, ...page });
+  }
+
   private hop(event: Omit<HopEvent, "kind" | "id">): string {
     this.eventSeq += 1;
     const id = `ev-${this.eventSeq}`;

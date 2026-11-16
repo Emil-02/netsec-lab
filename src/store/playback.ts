@@ -1,4 +1,4 @@
-import type { ExecResult, HopEvent, SimEvent } from "@/engine";
+import type { BrowserEvent, ExecResult, HopEvent, SimEvent } from "@/engine";
 
 export interface ActiveHop {
   event: HopEvent;
@@ -9,6 +9,7 @@ export interface ActiveHop {
 export interface PlaybackCallbacks {
   output(text: string): void;
   hopStarted(event: HopEvent): void;
+  browser(event: BrowserEvent): void;
   /** Called at most once per animation frame with the hops currently on the wire. */
   activeChanged(hops: ActiveHop[]): void;
   done(): void;
@@ -56,6 +57,7 @@ export class Playback {
 
   private emit(e: SimEvent, now: number) {
     if (e.kind === "output") this.cb.output(e.text);
+    else if (e.kind === "browser") this.cb.browser(e);
     else {
       this.cb.hopStarted(e);
       if (this.speed > 0) this.active.push({ event: e, start: now, duration: e.duration / this.speed });

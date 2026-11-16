@@ -7,8 +7,9 @@ import { getLab } from "@/content/labs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { createLabStore, SPEEDS } from "@/store/lab-store";
+import { createLabStore, SPEEDS, type LabState } from "@/store/lab-store";
 import { useProgress } from "@/store/progress-store";
+import { BrowserPanel } from "./browser-panel";
 import { DevicePanel } from "./device-panel";
 import { LabStoreContext, useLab } from "./lab-context";
 import { NetworkCanvas } from "./network-canvas";
@@ -41,15 +42,16 @@ function BottomPanel() {
   const tab = useLab((s) => s.bottomTab);
   const setTab = useLab((s) => s.setBottomTab);
   const count = useLab((s) => s.packetLog.length);
+  const pageCount = useLab((s) => s.pages.length);
+  const tabs: [LabState["bottomTab"], string][] = [
+    ["paket", `Paket (${count})`],
+    ["perangkat", "Perangkat"],
+  ];
+  if (pageCount || tab === "browser") tabs.push(["browser", `Browser (${pageCount})`]);
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-surface">
       <div className="flex gap-1 border-b border-border px-2 pt-1.5">
-        {(
-          [
-            ["paket", `Paket (${count})`],
-            ["perangkat", "Perangkat"],
-          ] as const
-        ).map(([id, label]) => (
+        {tabs.map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -59,7 +61,7 @@ function BottomPanel() {
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1">{tab === "paket" ? <PacketPanel /> : <DevicePanel />}</div>
+      <div className="min-h-0 flex-1">{tab === "paket" ? <PacketPanel /> : tab === "browser" ? <BrowserPanel /> : <DevicePanel />}</div>
     </div>
   );
 }

@@ -1,0 +1,111 @@
+**SQL Injection (SQLi)** terjadi ketika aplikasi menyusun query database dengan **menggabungkan string** yang berasal dari input pengguna. Akibatnya, input yang dirancang khusus bisa **mengubah struktur query** itu sendiri.
+
+## Akar masalah: data dicampur dengan kode
+
+Misalkan kode PHP sebuah toko online:
+
+```php
+$q = $_GET['q'];
+$sql = "SELECT nama, harga FROM produk WHERE nama LIKE '%" . $q . "%'";
+```
+
+Dengan input normal `kabel`, query-nya:
+
+```sql
+SELECT nama, harga FROM produk WHERE nama LIKE '%kabel%'
+```
+
+Tapi bagaimana jika input berisi tanda kutip `'`?
+
+```sql
+SELECT nama, harga FROM produk WHERE nama LIKE '%'%'
+--                                              ↑ string ditutup terlalu cepat → error sintaks
+```
+
+Error ini adalah **tanda pertama** bahwa input masuk ke query tanpa pengaman. Jika error database ditampilkan ke pengguna (*verbose error*), penyerang bahkan mendapat petunjuk struktur query.
+
+## Dampak 1: login tanpa password
+
+Query login yang rentan:
+
+```sql
+SELECT * FROM users WHERE username = 'INPUT_USER' AND password = 'HASH'
+```
+
+Jika username diisi `admin' -- `, query menjadi:
+
+```sql
+SELECT * FROM users WHERE username = 'admin' -- ' AND password = '...'
+```
+
+Di SQL, `--` adalah **komentar**: semua setelahnya diabaikan. Pengecekan password hilang, dan database mengembalikan akun admin.
+
+## Dampak 2: membongkar isi database dengan UNION
+
+`UNION` menggabungkan hasil dua `SELECT`. Penyerang menutup query asli lalu menambahkan `SELECT` miliknya sendiri, sehingga data dari tabel lain ikut tampil di halaman:
+
+```sql
+SELECT nama, harga FROM produk WHERE nama LIKE '%x'
+UNION SELECT table_name, table_schema FROM information_schema.tables -- %'
+```
+
+Syaratnya: jumlah kolom kedua `SELECT` harus sama. Tabel `information_schema` berisi **daftar semua tabel dan kolom**, sehingga penyerang bisa memetakan database lalu mengambil isinya: username, hash password, data pribadi pelanggan.
+
+<SequenceDiagram
+  title="Alur SQL injection"
+  actors={["Penyerang", "Aplikasi web", "Database"]}
+  steps={[
+    { from: 0, to: 1, label: "q = x' UNION SELECT ... -- ", color: "#f87171", detail: "Penyerang mengirim input berisi potongan SQL." },
+    { from: 1, to: 2, label: "query hasil penggabungan string", color: "#fbbf24", detail: "Aplikasi menempelkan input begitu saja ke dalam query. Database tidak bisa membedakan mana bagian dari programmer dan mana dari penyerang." },
+    { from: 2, to: 1, label: "data dari tabel rahasia", color: "#f87171", detail: "Database menjalankan query yang sudah diubah dan mengembalikan data yang seharusnya tidak boleh keluar." },
+    { from: 1, to: 0, label: "ditampilkan di halaman", color: "#f87171", detail: "Aplikasi menampilkan hasilnya seperti data produk biasa." },
+  ]}
+/>
+
+## Pertahanan utama: prepared statement
+
+Solusinya adalah **memisahkan kode dan data**. Dengan *prepared statement* (parameterized query), struktur query dikirim ke database lebih dulu dengan placeholder `?`, lalu nilai input dikirim terpisah sebagai **data**:
+
+```php
+$stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?");
+$stmt->execute([$user, $hash]);
+```
+
+Apa pun isi `$user` — termasuk `admin' -- ` — database memperlakukannya sebagai **teks biasa** yang dicari di kolom username. Struktur query **tidak mungkin berubah**.
+
+| Pertahanan | Fungsi |
+|---|---|
+| ✅ **Prepared statement / ORM** | pertahanan utama, wajib |
+| ✅ **Least privilege** di akun database | akun aplikasi tidak boleh membaca tabel yang tidak perlu |
+| ✅ **Jangan tampilkan error database** ke pengguna | catat di log server saja |
+| ✅ **Validasi input** (misal ID harus angka) | lapisan tambahan, bukan pengganti |
+| ✅ **WAF** (Web Application Firewall) | membantu memblokir pola serangan umum |
+| ❌ "Hapus tanda kutip" secara manual | mudah dilewati, jangan diandalkan |
+
+<LabCTA labId="sql-injection" />
+
+<Quiz
+  id="web-sqli"
+  questions={[
+    {
+      q: "Penyebab utama SQL injection adalah…",
+      options: ["Database terlalu lambat", "Query disusun dengan menggabungkan string dari input pengguna", "Memakai HTTPS", "Password terlalu pendek"],
+      answer: 1,
+    },
+    {
+      q: "Fungsi `--` dalam payload `admin' -- ` adalah…",
+      options: ["Mengurangi angka", "Menjadikan sisa query sebagai komentar", "Menghapus tabel", "Mengenkripsi input"],
+      answer: 1,
+    },
+    {
+      q: "Syarat agar UNION SELECT berhasil adalah…",
+      options: ["Jumlah kolom kedua SELECT sama", "Memakai HTTPS", "Login sebagai admin", "Tabel harus kosong"],
+      answer: 0,
+    },
+    {
+      q: "Pertahanan paling efektif terhadap SQL injection adalah…",
+      options: ["Menyembunyikan form login", "Prepared statement (parameterized query)", "Mengganti port database", "Memakai MD5"],
+      answer: 1,
+    },
+  ]}
+/>

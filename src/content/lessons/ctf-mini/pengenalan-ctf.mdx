@@ -1,0 +1,60 @@
+Selamat — kamu sudah sampai di modul terakhir! 🎉 Saatnya menguji semua yang sudah kamu pelajari dalam sebuah **CTF (Capture The Flag)**.
+
+## Apa itu CTF?
+
+CTF adalah kompetisi keamanan siber di mana peserta mencari **flag** — potongan teks rahasia seperti `FLAG{...}` — yang disembunyikan di dalam sistem yang sengaja dibuat rentan. Setiap flag yang ditemukan memberi poin.
+
+CTF adalah cara **legal dan menyenangkan** untuk melatih kemampuan hacking etis. Banyak profesional keamanan memulai kariernya dari sini.
+
+## Format CTF
+
+| Format | Cara main |
+|---|---|
+| **Jeopardy** | papan berisi soal-soal terpisah dengan kategori dan poin berbeda (paling umum untuk pemula) |
+| **Attack–Defense** | tim mempertahankan server sendiri sambil menyerang server tim lain |
+| **King of the Hill** | berebut menguasai satu server dan bertahan selama mungkin |
+
+## Kategori soal yang umum
+
+- 🌐 **Web** — SQL injection, XSS, robots.txt, cookie, logika aplikasi
+- 🔐 **Crypto** — encoding, cipher klasik, hash
+- 🕵️ **Forensics** — menganalisis file, log, atau rekaman paket (pcap)
+- 🌍 **Network / Recon** — nmap, DNS, layanan tersembunyi
+- 🔎 **OSINT** — mencari informasi dari sumber publik
+- 🧩 **Misc** — soal kreatif lainnya
+
+## Strategi untuk pemula
+
+1. **Baca soal dengan teliti** — petunjuk sering tersembunyi di judul dan deskripsi
+2. **Mulai dari soal termudah** (poin kecil) untuk membangun momentum
+3. **Lakukan recon dulu**: host apa saja yang ada? port apa yang terbuka? apa isi `robots.txt`?
+4. **Catat semuanya** — perintah yang sudah dicoba, temuan, dugaan
+5. **Kenali pola**: string berakhiran `=` → mungkin Base64; 32 karakter hex → mungkin MD5
+6. **Jangan terpaku terlalu lama** pada satu soal — pindah dulu, kembali nanti
+7. **Baca writeup** (pembahasan) setelah kompetisi selesai untuk belajar teknik baru
+
+## Peta keterampilanmu
+
+Tantangan di CTF Mini memakai hampir semua modul:
+
+| Tantangan | Modul yang dipakai |
+|---|---|
+| Pemanasan | 1 (Linux), 9 (encoding) |
+| Pesan di DNS | 8 (DNS) |
+| Jangan Diindeks | 8 (HTTP), 10 (recon) |
+| Pintu Belakang | 7 (port), 10 (nmap) |
+| Hash Bocor | 12 (serangan password) |
+| Admin Tanpa Password | 14 (SQL injection) |
+
+## Ke mana setelah ini?
+
+- 🏁 **CTF online**: picoCTF (ramah pemula), CTFtime.org (kalender kompetisi dunia), dan berbagai CTF kampus/komunitas di Indonesia
+- 🧪 **Platform latihan**: TryHackMe, Hack The Box, OverTheWire (Bandit untuk Linux)
+- 📜 **Sertifikasi**: CompTIA Network+ / Security+, Cisco CCNA, lalu sertifikasi pentest untuk tingkat lanjut
+- 🛡️ **Sisi pertahanan**: SOC analyst, blue team, digital forensics
+
+<Callout type="tip" title="Ingat kode etikmu">
+Kemampuan yang kamu latih di CTF hanya boleh digunakan pada sistem milikmu sendiri atau yang memberi izin tertulis. Jadilah hacker yang membuat internet **lebih aman**.
+</Callout>
+
+<LabCTA labId="ctf-mini" />

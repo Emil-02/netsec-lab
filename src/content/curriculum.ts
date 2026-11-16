@@ -233,13 +233,14 @@ export const modules: ModuleMeta[] = [
     slug: "web-security",
     number: 14,
     title: "Web Security",
-    description: "Cara kerja web, OWASP Top 10, SQL Injection, dan XSS.",
+    description: "Cara kerja aplikasi web, OWASP Top 10, SQL Injection, dan Cross-Site Scripting — beserta cara menutupnya.",
     icon: "bug",
     track: "Web",
-    available: false,
+    available: true,
     lessons: [
-      { slug: "sql-injection", title: "SQL Injection", minutes: 20 },
-      { slug: "xss", title: "Cross-Site Scripting (XSS)", minutes: 20 },
+      { slug: "owasp", title: "Aplikasi Web & OWASP Top 10", minutes: 12 },
+      { slug: "sql-injection", title: "SQL Injection", minutes: 20, labId: "sql-injection" },
+      { slug: "xss", title: "Cross-Site Scripting (XSS)", minutes: 20, labId: "xss" },
     ],
   },
   {
@@ -249,8 +250,8 @@ export const modules: ModuleMeta[] = [
     description: "Tantangan gabungan: recon → exploit → temukan flag!",
     icon: "flag",
     track: "CTF",
-    available: false,
-    lessons: [{ slug: "pengenalan-ctf", title: "Pengenalan CTF", minutes: 10 }],
+    available: true,
+    lessons: [{ slug: "pengenalan-ctf", title: "Pengenalan CTF & Tantangan Akhir", minutes: 45, labId: "ctf-mini" }],
   },
 ];
 

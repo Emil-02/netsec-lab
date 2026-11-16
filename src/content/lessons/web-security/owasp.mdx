@@ -1,0 +1,71 @@
+Hampir semua layanan yang kamu pakai setiap hari — e-commerce, internet banking, media sosial, sistem akademik — adalah **aplikasi web**. Karena bisa diakses siapa saja dari internet, aplikasi web menjadi salah satu target serangan yang paling sering.
+
+## Arsitektur aplikasi web
+
+```text
+ Browser  ──HTTP request──▶  Web server  ──▶  Kode aplikasi  ──SQL──▶  Database
+ (client)  ◀──HTML/JSON────   (nginx)         (PHP/Node/Python)  ◀───   (MySQL)
+```
+
+1. Browser mengirim **request** berisi URL, parameter, cookie, dan data form
+2. Kode aplikasi membaca input itu, lalu **membuat query** ke database
+3. Hasilnya disusun menjadi **HTML** dan dikirim kembali ke browser
+
+Setiap titik di mana **input dari pengguna** masuk ke sistem lain (query SQL, HTML, perintah shell, path file) adalah tempat potensial terjadinya celah.
+
+## Aturan emas keamanan web
+
+> **Jangan pernah percaya input dari pengguna.**
+
+Input bukan hanya kotak teks di form. Penyerang bisa mengubah **apa pun** yang dikirim browser: parameter URL, field tersembunyi, cookie, header, bahkan mengirim request langsung dengan `curl` tanpa membuka halamannya.
+
+## OWASP Top 10
+
+**OWASP** (*Open Worldwide Application Security Project*) adalah komunitas nirlaba yang menerbitkan daftar 10 risiko keamanan aplikasi web paling kritis. Versi 2021:
+
+| # | Kategori | Contoh |
+|---|---|---|
+| A01 | **Broken Access Control** | user biasa bisa membuka `/admin` atau data milik user lain |
+| A02 | **Cryptographic Failures** | password disimpan MD5 tanpa salt, data dikirim lewat HTTP |
+| A03 | **Injection** | **SQL Injection**, command injection, dan **XSS** |
+| A04 | Insecure Design | alur reset password yang bisa ditebak |
+| A05 | Security Misconfiguration | pesan error detail ditampilkan, halaman debug terbuka |
+| A06 | Vulnerable & Outdated Components | library/framework versi lama dengan celah publik |
+| A07 | Identification & Authentication Failures | tidak ada batas percobaan login, sesi tidak kedaluwarsa |
+| A08 | Software & Data Integrity Failures | update tanpa verifikasi tanda tangan/hash |
+| A09 | Security Logging & Monitoring Failures | serangan tidak tercatat dan tidak terdeteksi |
+| A10 | Server-Side Request Forgery (SSRF) | server dipaksa mengakses URL internal |
+
+Banyak di antaranya sudah kamu temui: HTTP tanpa enkripsi (A02), robots.txt yang membocorkan halaman (A05), versi software lama (A06), brute force (A07), dan pentingnya log (A09).
+
+## Dua celah klasik yang akan kita pelajari
+
+- **SQL Injection** — input pengguna mengubah **query database** → data bocor, login tanpa password
+- **Cross-Site Scripting (XSS)** — input pengguna disisipkan ke **halaman HTML** → skrip berjalan di browser korban
+
+Keduanya termasuk kategori **A03 Injection** dan punya akar masalah yang sama: **data dicampur dengan kode**.
+
+<Callout type="danger" title="Hanya di lab!">
+Mencoba SQL injection atau XSS pada website milik orang lain — walaupun hanya "mengetes" — adalah akses tanpa hak dan dapat dipidana. Di NetSec Lab, semua aplikasi (`toko.lab`, `forum.lab`) adalah simulasi yang memang dibuat rentan untuk belajar. Untuk latihan lanjutan, gunakan aplikasi latihan legal seperti DVWA, OWASP Juice Shop, atau program *bug bounty* sesuai aturannya.
+</Callout>
+
+<Quiz
+  id="web-dasar"
+  questions={[
+    {
+      q: "Aturan emas keamanan aplikasi web adalah…",
+      options: ["Selalu pakai port 80", "Jangan pernah percaya input dari pengguna", "Gunakan banyak JavaScript", "Simpan password di cookie"],
+      answer: 1,
+    },
+    {
+      q: "SQL Injection dan XSS termasuk kategori OWASP…",
+      options: ["A01 Broken Access Control", "A03 Injection", "A06 Outdated Components", "A10 SSRF"],
+      answer: 1,
+    },
+    {
+      q: "User biasa bisa membuka halaman /admin hanya dengan mengetik URL-nya. Ini contoh…",
+      options: ["Broken Access Control", "XSS", "Cryptographic Failures", "SSRF"],
+      answer: 0,
+    },
+  ]}
+/>

@@ -1,6 +1,8 @@
 import type { Network } from "../core/network";
 import type { SimEvent } from "../core/types";
 import { basicCommands } from "./commands/basic";
+import { browserCommand } from "./commands/browser";
+import { submitFlagCommand } from "./commands/ctf";
 import { fileCommands } from "./commands/files";
 import { cryptoCommands } from "./commands/crypto";
 import { firewallCommands } from "./commands/firewall";
@@ -11,7 +13,7 @@ import { serviceCommands } from "./commands/services";
 import { switchCommands } from "./commands/switch";
 import { textCommands } from "./commands/text";
 import { FsError } from "./fs";
-import { ansi, type BackgroundJob, type CommandContext, type CommandDef, type ResumeFn, type ShellSession } from "./types";
+import { ansi, type BackgroundJob, type CommandContext, type CommandDef, type FlagDef, type ResumeFn, type ShellSession } from "./types";
 
 type Token = { type: "word"; value: string } | { type: "op"; value: "|" | ">" | ">>" | "&&" | ";" };
 
@@ -30,7 +32,7 @@ register(serviceCommands);
 register(firewallCommands);
 register(switchCommands);
 register(cryptoCommands);
-register([nmapCommand, tcpdumpCommand]);
+register([nmapCommand, tcpdumpCommand, browserCommand, submitFlagCommand]);
 
 export function registerCommands(defs: CommandDef[]) {
   register(defs);
@@ -144,6 +146,8 @@ export interface ExecOptions {
   allowedCommands?: string[];
   /** Lab traffic replayed by commands that "wait and listen" (tcpdump). */
   background?: BackgroundJob[];
+  /** CTF flags accepted by `submit-flag`. */
+  flags?: FlagDef[];
 }
 
 export interface PendingInput {
@@ -225,6 +229,7 @@ function makeContext(net: Network, session: ShellSession, state: RunState, optio
     sudo: init.sudo,
     user,
     allowed: options.allowedCommands,
+    flags: options.flags,
     print(text = "") {
       if (capture) capture.buf += `${text}\n`;
       else if (!state.silent) net.output(this.t, text);
@@ -359,7 +364,7 @@ function runLine(net: Network, session: ShellSession, line: string, options: Exe
   });
 }
 
-const ALWAYS_ALLOWED = ["help", "clear", "exit"];
+const ALWAYS_ALLOWED = ["help", "clear", "exit", "submit-flag"];
 
 function finish(net: Network, state: RunState, exitCode: number, options: ExecOptions): ExecResult {
   const lastEventEnd = net.events.reduce((max, e) => Math.max(max, e.kind === "hop" ? e.at + e.duration : e.at), 0);

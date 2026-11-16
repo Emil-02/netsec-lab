@@ -1,0 +1,109 @@
+**Cross-Site Scripting (XSS)** terjadi ketika aplikasi menampilkan input pengguna di halaman HTML **tanpa di-escape**, sehingga penyerang bisa menyisipkan **skrip** yang kemudian dijalankan oleh **browser pengunjung lain**.
+
+Jika SQL injection menyerang **database di server**, XSS menyerang **pengguna** aplikasi.
+
+## Kenapa berbahaya?
+
+Skrip yang berjalan di halaman sebuah situs punya akses yang sama dengan situs itu sendiri. Penyerang dapat:
+
+- 🍪 **Mencuri cookie sesi** → mengambil alih akun korban tanpa tahu password-nya
+- 🎭 Melakukan aksi **atas nama korban** (mengirim pesan, mengubah email, transfer)
+- 🎣 Mengganti tampilan halaman dengan **form login palsu** (phishing di domain asli!)
+- ⌨️ Merekam apa yang diketik korban
+
+## Jenis-jenis XSS
+
+### 1. Reflected XSS
+
+Input dari URL langsung "dipantulkan" ke halaman:
+
+```text
+https://forum.lab/cari?q=<script>…</script>
+→ "Hasil pencarian untuk: <script>…</script>"
+```
+
+Penyerang harus **membujuk korban mengklik** link berbahaya (lewat email, chat, media sosial).
+
+### 2. Stored XSS
+
+Payload **disimpan** di server (komentar, profil, buku tamu) lalu ditampilkan ke **setiap pengunjung**. Jauh lebih berbahaya karena korbannya bisa ribuan orang, termasuk admin.
+
+<SequenceDiagram
+  title="Stored XSS"
+  actors={["Penyerang", "Forum", "Korban"]}
+  steps={[
+    { from: 0, to: 1, label: "kirim komentar berisi <script>", color: "#f87171", detail: "Penyerang menulis komentar yang berisi tag skrip. Server menyimpannya apa adanya." },
+    { from: 2, to: 1, label: "buka halaman forum", color: "#60a5fa", detail: "Pengunjung lain membuka halaman yang memuat komentar tersebut." },
+    { from: 1, to: 2, label: "HTML + skrip penyerang", color: "#f87171", detail: "Server mengirim halaman yang kini berisi skrip penyerang. Browser korban tidak bisa membedakannya dari skrip asli situs, lalu menjalankannya." },
+  ]}
+/>
+
+### 3. DOM-based XSS
+
+Celah ada di **JavaScript sisi client** yang memasukkan data (misalnya dari URL) ke halaman dengan `innerHTML`, tanpa melewati server.
+
+## Tidak hanya tag `<script>`
+
+Skrip bisa disisipkan lewat banyak cara, misalnya **event handler** atribut HTML:
+
+```html
+<img src=x onerror=alert(1)>
+<a href="javascript:alert(1)">klik</a>
+```
+
+Karena itu, memblokir kata "script" saja tidak cukup.
+
+## Pertahanan
+
+### Output encoding (escaping) — pertahanan utama
+
+Ubah karakter khusus HTML menjadi entitas sebelum ditampilkan:
+
+| Karakter | Menjadi |
+|---|---|
+| `<` | `&lt;` |
+| `>` | `&gt;` |
+| `"` | `&quot;` |
+| `'` | `&#39;` |
+| `&` | `&amp;` |
+
+Hasilnya, `<script>` tampil sebagai **teks biasa** di layar, bukan dieksekusi. Framework modern (React, Vue, template engine) melakukan ini **secara otomatis** — celah biasanya muncul saat developer menonaktifkannya (`dangerouslySetInnerHTML`, `v-html`, `|safe`).
+
+### Lapisan tambahan
+
+- 🛡️ **Content Security Policy (CSP)** — header yang memberi tahu browser skrip mana yang boleh dijalankan
+- 🍪 **Cookie `HttpOnly`** — cookie sesi tidak bisa dibaca JavaScript, sehingga tidak bisa dicuri lewat XSS
+- 🧹 **Sanitasi HTML** dengan library tepercaya jika pengguna memang boleh memakai format (tebal, miring)
+- ✅ **Validasi input** sesuai konteks
+
+<Callout type="info" title="Browser di lab ini aman">
+Browser simulasi NetSec Lab **tidak pernah menjalankan skrip** dari halaman lab. Ia hanya mendeteksi dan menampilkan skrip yang *akan* dijalankan oleh browser sungguhan, sehingga kamu bisa melihat dampaknya dengan aman.
+</Callout>
+
+<LabCTA labId="xss" />
+
+<Quiz
+  id="web-xss"
+  questions={[
+    {
+      q: "XSS terutama menyerang…",
+      options: ["Database server", "Pengguna/browser yang membuka halaman", "Router", "File sistem server"],
+      answer: 1,
+    },
+    {
+      q: "Payload XSS yang disimpan di kolom komentar dan muncul untuk semua pengunjung disebut…",
+      options: ["Reflected XSS", "Stored XSS", "DOM-based XSS", "SQL injection"],
+      answer: 1,
+    },
+    {
+      q: "Pertahanan utama terhadap XSS adalah…",
+      options: ["Output encoding/escaping HTML", "Memakai MD5", "Menutup port 80", "Prepared statement"],
+      answer: 0,
+    },
+    {
+      q: "Atribut cookie yang mencegah cookie sesi dibaca JavaScript adalah…",
+      options: ["Secure", "HttpOnly", "Path", "Expires"],
+      answer: 1,
+    },
+  ]}
+/>

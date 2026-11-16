@@ -40,9 +40,17 @@ import SniffingMitmSniffing from "./lessons/sniffing-mitm/sniffing.mdx";
 import SeranganPasswordSeranganPassword from "./lessons/serangan-password/serangan-password.mdx";
 import PertahananJaringanFirewall from "./lessons/pertahanan-jaringan/firewall.mdx";
 import PertahananJaringanIdsDanRespons from "./lessons/pertahanan-jaringan/ids-dan-respons.mdx";
+import WebSecurityOwasp from "./lessons/web-security/owasp.mdx";
+import WebSecuritySqlInjection from "./lessons/web-security/sql-injection.mdx";
+import WebSecurityXss from "./lessons/web-security/xss.mdx";
+import CtfMiniPengenalanCtf from "./lessons/ctf-mini/pengenalan-ctf.mdx";
 
 /** Lesson key ("module/lesson") → compiled MDX component. */
 export const lessonContent: Record<string, MDXContent> = {
+  "web-security/owasp": WebSecurityOwasp,
+  "web-security/sql-injection": WebSecuritySqlInjection,
+  "web-security/xss": WebSecurityXss,
+  "ctf-mini/pengenalan-ctf": CtfMiniPengenalanCtf,
   "pengenalan/etika-dan-hukum": PengenalanEtikaDanHukum,
   "pengenalan/selamat-datang": PengenalanSelamatDatang,
   "pengenalan/tur-lab": PengenalanTurLab,

@@ -4,6 +4,7 @@ import { Terminal } from "lucide-react";
 import { broadcastAddress } from "@/engine";
 import { deviceColors, deviceIcons, deviceKindLabel } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useLab } from "./lab-context";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -142,6 +143,29 @@ export function DevicePanel() {
               empty="Kosong — belum berkomunikasi dengan siapa pun."
             />
           </Section>
+          {device.web?.sqlLog && (
+            <Section title="Log query database (aplikasi web)">
+              {device.web.sqlLog.length === 0 ? (
+                <p className="text-xs text-muted italic">Belum ada query. Buka halaman aplikasi web ini dengan curl atau browser.</p>
+              ) : (
+                <ol className="space-y-1.5">
+                  {device.web.sqlLog
+                    .slice(-8)
+                    .reverse()
+                    .map((q, i) => (
+                      <li key={i} className={cn("rounded border p-1.5 font-mono text-[11px] break-all", q.ok ? "border-border bg-black/30" : "border-red-500/40 bg-red-500/10")}>
+                        <div className="mb-0.5 font-sans text-[10px] text-muted">
+                          {q.path} · {q.params ? "prepared statement" : "string digabung"} · {q.ok ? `${q.rows} baris` : "ERROR"}
+                        </div>
+                        <div className="text-slate-100">{q.sql}</div>
+                        {q.params && <div className="text-cyan-300">parameter: {q.params.map((p) => JSON.stringify(p)).join(", ")}</div>}
+                        {q.error && <div className="text-red-300">{q.error}</div>}
+                      </li>
+                    ))}
+                </ol>
+              )}
+            </Section>
+          )}
           {device.services.length > 0 && (
             <Section title="Layanan yang berjalan (port listening)">
               <Table

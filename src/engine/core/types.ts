@@ -159,6 +159,8 @@ export interface SqlLogEntry {
   error?: string;
   /** Path of the page that ran the query. */
   path: string;
+  /** Label set by the app for notable events (used by lab objectives), e.g. "login-bypass". */
+  tag?: string;
 }
 
 export interface WebServerConfig {
@@ -166,6 +168,8 @@ export interface WebServerConfig {
   routes: Record<string, WebRoute>;
   /** Queries executed by the app's database layer (shown in the device panel). */
   sqlLog?: SqlLogEntry[];
+  /** Arbitrary app state that lab objectives may inspect (e.g. guestbook entries). */
+  state?: Record<string, unknown>;
 }
 
 export interface Device {
@@ -320,4 +324,15 @@ export interface OutputEvent {
   text: string;
 }
 
-export type SimEvent = HopEvent | OutputEvent;
+/** A page opened in the simulated web browser (shown in the lab's Browser tab). */
+export interface BrowserEvent {
+  kind: "browser";
+  at: number;
+  url: string;
+  status: number;
+  html: string;
+  /** Script fragments a real browser would execute (XSS detection). */
+  scripts: string[];
+}
+
+export type SimEvent = HopEvent | OutputEvent | BrowserEvent;

@@ -37,6 +37,14 @@ export interface BackgroundJob {
 
 export type ResumeFn = (input: string, ctx: CommandContext) => number | void;
 
+export interface FlagDef {
+  id: string;
+  title: string;
+  /** SHA-256 of the exact flag text, so flags are not stored in plain text. */
+  hash: string;
+  points: number;
+}
+
 export interface CommandContext {
   net: Network;
   session: ShellSession;
@@ -58,6 +66,8 @@ export interface CommandContext {
   sudo: boolean;
   /** Commands unlocked in the current lab (undefined = all). */
   allowed?: string[];
+  /** CTF flags accepted by `submit-flag` in the current lab. */
+  flags?: FlagDef[];
   /** User the command runs as (before sudo). */
   user: string;
   clear(): void;
