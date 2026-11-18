@@ -2,6 +2,8 @@
 
 Web belajar **jaringan komputer & cyber security dari nol** (Bahasa Indonesia) dengan **lab interaktif**: ketik perintah di terminal (kiri) dan lihat paket bergerak di peta jaringan (kanan). Semua jaringan disimulasikan di browser — aman, tanpa VM/container.
 
+![Ilustrasi workspace NetSec Lab: terminal simulasi dan peta jaringan](docs/screenshot.png)
+
 ## Menjalankan
 
 ```bash
