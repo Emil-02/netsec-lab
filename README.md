@@ -4,6 +4,12 @@ Web belajar **jaringan komputer & cyber security dari nol** (Bahasa Indonesia) d
 
 ![Ilustrasi workspace NetSec Lab: terminal simulasi dan peta jaringan](docs/screenshot.png)
 
+## Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Emil-02/netsec-lab)
+
+Vercel mendeteksi Next.js secara otomatis. Tidak ada environment variable yang perlu diisi.
+
 ## Menjalankan
 
 ```bash
